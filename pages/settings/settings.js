@@ -672,3 +672,101 @@ function createBang (bang, snippet, redirect) {
 
   return li
 }
+
+/* LLM Provider Settings */
+var llmModelDropdown = document.getElementById('llm-model-dropdown')
+var llmCustomModelInput = document.getElementById('llm-custom-model')
+var llmApiKeyInput = document.getElementById('llm-api-key')
+var llmSaveButton = document.getElementById('llm-save-button')
+
+// Show/hide custom model input based on dropdown selection
+function toggleCustomModelInput () {
+  if (llmModelDropdown.value === 'custom') {
+    llmCustomModelInput.style.display = 'inline-block'
+    llmCustomModelInput.focus()
+  } else {
+    llmCustomModelInput.style.display = 'none'
+  }
+}
+
+// Handle dropdown changes
+llmModelDropdown.addEventListener('change', toggleCustomModelInput)
+
+// Load existing LLM settings
+settings.get('llmProvider', function (value) {
+  if (value && value.modelName) {
+    var modelName = value.modelName
+    
+    // Check if it's one of our predefined models
+    if (modelName === 'claude-3-5-sonnet' || modelName === 'gpt-4o-mini') {
+      llmModelDropdown.value = modelName
+    } else {
+      // It's a custom model
+      llmModelDropdown.value = 'custom'
+      llmCustomModelInput.value = modelName
+    }
+    
+    toggleCustomModelInput()
+    llmApiKeyInput.value = value.apiKey || ''
+  }
+})
+
+// Get the current model name (either from dropdown or custom input)
+function getCurrentModelName () {
+  if (llmModelDropdown.value === 'custom') {
+    return llmCustomModelInput.value.trim()
+  } else {
+    return llmModelDropdown.value
+  }
+}
+
+// Save LLM settings
+llmSaveButton.addEventListener('click', function () {
+  var modelName = getCurrentModelName()
+  
+  if (!modelName) {
+    // Show error if no model is specified
+    llmSaveButton.textContent = 'Please specify a model'
+    llmSaveButton.style.color = '#d73a49'
+    setTimeout(function () {
+      llmSaveButton.textContent = l('settingsLLMSaveButton')
+      llmSaveButton.style.color = ''
+    }, 2000)
+    return
+  }
+  
+  var llmSettings = {
+    modelName: modelName,
+    apiKey: llmApiKeyInput.value.trim()
+  }
+  
+  settings.set('llmProvider', llmSettings)
+  
+  // Visual feedback for successful save
+  var originalText = llmSaveButton.textContent
+  llmSaveButton.textContent = 'Saved!'
+  llmSaveButton.disabled = true
+  llmSaveButton.style.color = '#28a745'
+  
+  setTimeout(function () {
+    llmSaveButton.textContent = originalText
+    llmSaveButton.disabled = false
+    llmSaveButton.style.color = ''
+  }, 2000)
+})
+
+/* Hash Navigation Support */
+// Handle hash navigation for direct section access
+if (window.location.hash) {
+  var element = document.querySelector(window.location.hash)
+  if (element) {
+    setTimeout(function () {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      // Add subtle highlight effect
+      element.style.backgroundColor = 'rgba(0, 123, 255, 0.1)'
+      setTimeout(function () {
+        element.style.backgroundColor = ''
+      }, 3000)
+    }, 100)
+  }
+}

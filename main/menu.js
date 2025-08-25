@@ -357,6 +357,17 @@ function buildAppMenu (options = {}) {
           click: function (item, window) {
             sendIPCToWindow(window, 'summarizePage')
           }
+        },
+        {
+          type: 'separator'
+        },
+        {
+          label: l('appMenuSwitchLLM'),
+          click: function (item, window) {
+            sendIPCToWindow(window, 'addTab', {
+              url: 'min://app/pages/settings/index.html#llm-provider'
+            })
+          }
         }
       ]
     },

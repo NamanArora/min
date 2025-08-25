@@ -10,6 +10,7 @@ var PDFViewer = require('pdfViewer.js')
 var tabEditor = require('navbar/tabEditor.js')
 var readerView = require('readerView.js')
 var taskOverlay = require('taskOverlay/taskOverlay.js')
+var settings = require('util/settings/settings.js')
 
 module.exports = {
   initialize: function () {
@@ -144,6 +145,17 @@ module.exports = {
     })
 
     ipc.on('summarizePage', function () {
+      // Test LLM settings global access
+      var llmConfig = settings.get('llmProvider')
+      if (llmConfig && llmConfig.apiKey && llmConfig.modelName) {
+        console.log('✅ LLM Provider configured')
+        console.log('   Model:', llmConfig.modelName)
+        console.log('   API Key:', llmConfig.apiKey ? 'Present' : 'Missing')
+      } else {
+        console.log('⚠️  LLM Provider not configured')
+        console.log('   Use Capabilities → Switch LLM... to configure AI models')
+      }
+      
       // Extract page content using the same logic as textExtractor.js
       webviews.callAsync(tabs.getSelected(), 'executeJavaScript', `
         (function() {

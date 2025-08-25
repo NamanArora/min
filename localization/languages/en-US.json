@@ -227,6 +227,7 @@
     "appMenuInspectPage": "Inspect Page",
     "appMenuCapabilities": "Capabilities",
     "appMenuPageSummarizer": "Page Summarizer",
+    "appMenuSwitchLLM": "Switch LLM...",
     "appMenuWindow": "Window",
     "appMenuMinimize": "Minimize",
     "appMenuClose": "Close",
@@ -272,6 +273,17 @@
     "settingsPasswordAutoFillHeadline": "Password Auto-Fill",
     "settingsSelectPasswordManager": "Choose one of the supported password managers:",
     "keychainViewPasswords": "View saved passwords",
+    /* LLM Provider settings */
+    "settingsLLMProviderHeading": "LLM Provider",
+    "settingsLLMModelName": "Model Name",
+    "settingsLLMAPIKey": "API Key",
+    "settingsLLMModelPlaceholder": "e.g., gpt-4, claude-3-opus",
+    "settingsLLMAPIKeyPlaceholder": "Enter your API key",
+    "settingsLLMSaveButton": "Save LLM Settings",
+    "settingsLLMModelClaude": "Claude (Anthropic)",
+    "settingsLLMModelGPT4oMini": "GPT-4o Mini (OpenAI)",
+    "settingsLLMModelCustom": "Custom",
+    "settingsLLMCustomModelPlaceholder": "Enter custom model name",
     /* Password manager setup */
     "passwordManagerSetupHeading": "Finish setting up %p to use Autofill",
     "passwordManagerSetupStep1": {

@@ -275,6 +275,44 @@
       </div>
     </div>
 
+    <div class="settings-container" id="llm-provider">
+      <h3 data-string="settingsLLMProviderHeading"></h3>
+
+      <div class="setting-section">
+        <label for="llm-model-dropdown" data-string="settingsLLMModelName"></label>
+        <select
+          id="llm-model-dropdown"
+          style="margin-left: 1em; width: 300px; max-width: 80vw;"
+        >
+          <option value="claude-3-5-sonnet" data-string="settingsLLMModelClaude"></option>
+          <option value="gpt-4o-mini" data-string="settingsLLMModelGPT4oMini"></option>
+          <option value="custom" data-string="settingsLLMModelCustom"></option>
+        </select>
+        <input
+          type="text"
+          id="llm-custom-model"
+          data-string="settingsLLMCustomModelPlaceholder"
+          data-string-for="placeholder"
+          style="margin-left: 1em; width: 300px; max-width: 80vw; display: none;"
+        />
+      </div>
+
+      <div class="setting-section">
+        <label for="llm-api-key" data-string="settingsLLMAPIKey"></label>
+        <input
+          type="password"
+          id="llm-api-key"
+          data-string="settingsLLMAPIKeyPlaceholder"
+          data-string-for="placeholder"
+          style="margin-left: 1em; width: 300px; max-width: 80vw;"
+        />
+      </div>
+
+      <div class="setting-section">
+        <button id="llm-save-button" data-string="settingsLLMSaveButton"></button>
+      </div>
+    </div>
+
     <div class="settings-container" id="proxy-settings-container">
       <h3 data-string="settingsProxyHeading"></h3>
 
