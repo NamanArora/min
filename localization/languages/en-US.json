@@ -225,6 +225,8 @@
     "appMenuReloadBrowser": "Reload Browser",
     "appMenuInspectBrowser": "Inspect Browser",
     "appMenuInspectPage": "Inspect Page",
+    "appMenuCapabilities": "Capabilities",
+    "appMenuPageSummarizer": "Page Summarizer",
     "appMenuWindow": "Window",
     "appMenuMinimize": "Minimize",
     "appMenuClose": "Close",

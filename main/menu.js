@@ -349,6 +349,17 @@ function buildAppMenu (options = {}) {
           ] : [])
       ]
     },
+    {
+      label: l('appMenuCapabilities'),
+      submenu: [
+        {
+          label: l('appMenuPageSummarizer'),
+          click: function (item, window) {
+            sendIPCToWindow(window, 'summarizePage')
+          }
+        }
+      ]
+    },
     ...(process.platform === 'darwin' ? [
       {
         label: l('appMenuWindow'),

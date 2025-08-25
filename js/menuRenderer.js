@@ -142,5 +142,96 @@ module.exports = {
     ipc.on('goForward', function () {
       webviews.callAsync(tabs.getSelected(), 'goForward')
     })
+
+    ipc.on('summarizePage', function () {
+      // Extract page content using the same logic as textExtractor.js
+      webviews.callAsync(tabs.getSelected(), 'executeJavaScript', `
+        (function() {
+          // Reuse the page text extraction logic from textExtractor.js
+          function isVisible(el) {
+            return el.offsetWidth || el.offsetHeight || (el.getClientRects && el.getClientRects().length)
+          }
+
+          function extractPageText(doc, win) {
+            var maybeNodes = [].slice.call(doc.body.childNodes)
+            var textNodes = []
+            var ignore = 'link, style, script, noscript, .hidden, .visually-hidden, .visuallyhidden, [role=presentation], [hidden], [style*="display:none"], [style*="display: none"], .ad, .dialog, .modal, select, svg, details:not([open]), header, nav, footer'
+
+            while (maybeNodes.length) {
+              var node = maybeNodes.shift()
+              if (node.matches && node.matches(ignore)) {
+                continue
+              }
+              if (node.nodeType === 3) {
+                textNodes.push(node)
+                continue
+              }
+              if (!isVisible(node)) {
+                continue
+              }
+              var childNodes = node.childNodes
+              var cnl = childNodes.length
+              for (var i = cnl - 1; i >= 0; i--) {
+                var childNode = childNodes[i]
+                maybeNodes.unshift(childNode)
+              }
+            }
+
+            var text = ''
+            var tnl = textNodes.length
+            for (var i = 0; i < tnl; i++) {
+              text += textNodes[i].textContent + ' '
+            }
+
+            // Add meta description if available
+            var mt = doc.head.querySelector('meta[name=description]')
+            if (mt) {
+              text += ' ' + mt.content
+            }
+
+            text = text.trim()
+            text = text.replace(/[\\n\\t]/g, ' ')
+            text = text.replace(/\\s{2,}/g, ' ')
+            
+            // Limit to 300KB like the original textExtractor
+            return text.substring(0, 300000)
+          }
+
+          var text = extractPageText(document, window)
+          
+          // Try to extract from same-origin iframes
+          var frames = document.querySelectorAll('iframe')
+          for (var x = 0; x < frames.length; x++) {
+            try {
+              text += '. ' + extractPageText(frames[x].contentDocument, frames[x].contentWindow)
+            } catch (e) {}
+          }
+
+          return {
+            title: document.title,
+            url: window.location.href,
+            textLength: text.length,
+            extractedText: text
+          }
+        })()
+      `, function (err, pageData) {
+        if (err) {
+          console.error('Failed to extract page content:', err)
+          return
+        }
+        
+        if (pageData && pageData.extractedText) {
+          console.log('=== PAGE SUMMARIZER RESULTS ===')
+          console.log('Page Title:', pageData.title)
+          console.log('Page URL:', pageData.url)
+          console.log('Content Length:', pageData.textLength, 'characters')
+          console.log('\\n--- EXTRACTED CONTENT ---')
+          console.log(pageData.extractedText)
+          console.log('\\n=== END SUMMARIZER RESULTS ===')
+        } else {
+          console.log('Page Summarizer: No content could be extracted from this page')
+        }
+      })
+    })
   }
 }
