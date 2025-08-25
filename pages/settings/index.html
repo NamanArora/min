@@ -132,7 +132,10 @@
       </div>
 
       <div class="setting-section">
-        <label for="setting-language-picker" data-string="settingsLanguageSelection"></label>
+        <label
+          for="setting-language-picker"
+          data-string="settingsLanguageSelection"
+        ></label>
         <select id="setting-language-picker"></select>
       </div>
     </div>
@@ -141,22 +144,28 @@
       <h3 data-string="settingsAdditionalFeaturesHeading"></h3>
 
       <div class="setting-section">
-        <label for="startupOptions" data-string="settingsStartupOptions"></label>
+        <label
+          for="startupOptions"
+          data-string="settingsStartupOptions"
+        ></label>
         <select id="startup-options" name="startupOptions">
           <option value="1" data-string="settingsStartupCreateTask"></option>
-          <option 
-          value="2" data-string="settingsStartupNewTaskandBackground"></option>
-          <option value="3"
-          data-string="settingsStartupNewTaskOnly"></option>
+          <option
+            value="2"
+            data-string="settingsStartupNewTaskandBackground"
+          ></option>
+          <option value="3" data-string="settingsStartupNewTaskOnly"></option>
         </select>
       </div>
 
       <div class="setting-section">
-        <label for="newWindowOptions" data-string="settingsNewWindowOptions"></label>
+        <label
+          for="newWindowOptions"
+          data-string="settingsNewWindowOptions"
+        ></label>
         <select id="new-window-options" name="newWindowOptions">
           <option value="1" data-string="settingsNewWindowCreateTask"></option>
-          <option 
-          value="2" data-string="settingsNewWindowPickTask"></option>
+          <option value="2" data-string="settingsNewWindowPickTask"></option>
         </select>
       </div>
 
@@ -171,7 +180,12 @@
           data-string="settingsUserscriptsExplanation"
           data-allowHTML
         ></div>
-        <div class="setting-secondary-label" id="userscripts-show-directory" hidden style="margin-top: -0.5em; margin-bottom: 0.5em">
+        <div
+          class="setting-secondary-label"
+          id="userscripts-show-directory"
+          hidden
+          style="margin-top: -0.5em; margin-bottom: 0.5em"
+        >
           <a data-string="settingsUserscriptShowDirectory"></a>
         </div>
       </div>
@@ -211,10 +225,13 @@
         />
       </div>
 
-		<div class="setting-section">
-			<input type="checkbox" id="checkbox-enable-autoplay">
-			<label for="checkbox-enable-autoplay" data-string="settingsAutoplayToggle"></label>
-		</div>
+      <div class="setting-section">
+        <input type="checkbox" id="checkbox-enable-autoplay" />
+        <label
+          for="checkbox-enable-autoplay"
+          data-string="settingsAutoplayToggle"
+        ></label>
+      </div>
 
       <div class="setting-section">
         <input type="checkbox" id="checkbox-update-notifications" />
@@ -279,13 +296,22 @@
       <h3 data-string="settingsLLMProviderHeading"></h3>
 
       <div class="setting-section">
-        <label for="llm-model-dropdown" data-string="settingsLLMModelName"></label>
+        <label
+          for="llm-model-dropdown"
+          data-string="settingsLLMModelName"
+        ></label>
         <select
           id="llm-model-dropdown"
-          style="margin-left: 1em; width: 300px; max-width: 80vw;"
+          style="margin-left: 1em; width: 300px; max-width: 80vw"
         >
-          <option value="claude-3-5-sonnet" data-string="settingsLLMModelClaude"></option>
-          <option value="gpt-4o-mini" data-string="settingsLLMModelGPT4oMini"></option>
+          <option
+            value="claude-3-5-sonnet"
+            data-string="settingsLLMModelClaude"
+          ></option>
+          <option
+            value="gpt-4o-mini"
+            data-string="settingsLLMModelGPT4oMini"
+          ></option>
           <option value="custom" data-string="settingsLLMModelCustom"></option>
         </select>
         <input
@@ -293,7 +319,7 @@
           id="llm-custom-model"
           data-string="settingsLLMCustomModelPlaceholder"
           data-string-for="placeholder"
-          style="margin-left: 1em; width: 300px; max-width: 80vw; display: none;"
+          style="margin-left: 1em; width: 300px; max-width: 80vw; display: none"
         />
       </div>
 
@@ -304,12 +330,15 @@
           id="llm-api-key"
           data-string="settingsLLMAPIKeyPlaceholder"
           data-string-for="placeholder"
-          style="margin-left: 1em; width: 300px; max-width: 80vw;"
+          style="margin-left: 1em; width: 300px; max-width: 80vw"
         />
       </div>
 
       <div class="setting-section">
-        <button id="llm-save-button" data-string="settingsLLMSaveButton"></button>
+        <button
+          id="llm-save-button"
+          data-string="settingsLLMSaveButton"
+        ></button>
       </div>
     </div>
 
