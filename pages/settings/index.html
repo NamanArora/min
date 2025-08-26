@@ -362,6 +362,37 @@
           </div>
         </div>
       </div>
+      
+      <div class="setting-section" style="margin-top: 20px;">
+        <label data-string="settingsAISoundsHeading"></label>
+        <div class="setting-section">
+          <div class="setting-option">
+            <input type="checkbox" id="ai-sounds-enabled" />
+            <label for="ai-sounds-enabled" data-string="settingsAISoundsEnabled"></label>
+          </div>
+        </div>
+        
+        <div class="setting-section" id="ai-sound-controls" style="margin-left: 20px;">
+          <div class="setting-option">
+            <label for="ai-response-sound" data-string="settingsAIResponseSound"></label>
+            <select id="ai-response-sound" style="margin-left: 1em; width: 200px;">
+              <option value="notification" data-string="settingsAISoundNotification"></option>
+              <option value="chime" data-string="settingsAISoundChime"></option>
+              <option value="pop" data-string="settingsAISoundPop"></option>
+              <option value="ping" data-string="settingsAISoundPing"></option>
+              <option value="off" data-string="settingsAISoundOff"></option>
+            </select>
+            <button id="test-ai-sound" style="margin-left: 0.5em;" data-string="settingsAISoundTest"></button>
+          </div>
+          
+          <div class="setting-option" style="margin-top: 10px;">
+            <label for="ai-sound-volume" data-string="settingsAISoundVolume"></label>
+            <input type="range" id="ai-sound-volume" min="0" max="100" value="50" 
+                   style="margin-left: 1em; width: 150px;" />
+            <span id="volume-display" style="margin-left: 0.5em;">50%</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="settings-container" id="proxy-settings-container">

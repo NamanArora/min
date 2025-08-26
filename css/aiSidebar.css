@@ -165,15 +165,21 @@
   white-space: pre-wrap;
 }
 
-/* User query styling */
+/* User query styling - Always blue background with white text */
 .ai-query .ai-message-content {
-  background: var(--primary-color, #007AFF);
-  color: white;
+  background: var(--primary-color, #007AFF) !important;
+  color: white !important;
   margin-left: 20px;
   border-bottom-right-radius: 4px;
 }
 
-/* Auto-generated query styling */
+/* Normal user queries - ensure blue styling is preserved */
+.ai-query:not(.auto-generated) .ai-message-content {
+  background: var(--primary-color, #007AFF) !important;
+  color: white !important;
+}
+
+/* Auto-generated query styling - only applies to auto-generated queries */
 .ai-query.auto-generated .ai-message-header {
   color: var(--secondary-text-color, #666);
   opacity: 0.9;
@@ -184,8 +190,8 @@
 }
 
 .ai-query.auto-generated .ai-message-content {
-  background: var(--auto-generated-background, #f8f9fa);
-  color: var(--theme-text-color);
+  background: var(--auto-generated-background, #f8f9fa) !important;
+  color: var(--theme-text-color) !important;
   border: 1px solid var(--auto-generated-border, #28a745);
   border-left: 3px solid var(--auto-generated-color, #28a745);
 }

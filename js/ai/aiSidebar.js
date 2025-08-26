@@ -1,6 +1,7 @@
 var webviews = require('webviews.js')
 var settings = require('util/settings/settings.js')
 var llmProvider = require('./llmProvider.js')
+var soundManager = require('util/soundManager.js')
 
 // Global state for AI sidebar
 var aiSidebar = {
@@ -176,6 +177,11 @@ Please answer based on the page content when relevant, or provide general assist
       this.renderConversation(conversation)
       this.scrollToBottom()
       this.saveState()
+
+      // Play sound notification for successful AI responses (not errors)
+      if (!isError && response) {
+        soundManager.playAiResponseSound()
+      }
     }
   },
 

@@ -301,6 +301,17 @@
     "settingsAutoSummarizationMedium": "Medium (mostly text pages)",
     "settingsAutoSummarizationHigh": "High (any text-focused page)",
     "autoSummaryIndicator": "Auto-generated summary",
+    /* AI Sounds settings */
+    "settingsAISoundsHeading": "AI Response Sounds",
+    "settingsAISoundsEnabled": "Enable sound notifications for AI responses",
+    "settingsAIResponseSound": "AI Response Sound",
+    "settingsAISoundNotification": "Notification",
+    "settingsAISoundChime": "Chime",
+    "settingsAISoundPop": "Pop",
+    "settingsAISoundPing": "Ping",
+    "settingsAISoundOff": "Off (No Sound)",
+    "settingsAISoundTest": "Test",
+    "settingsAISoundVolume": "Volume",
     /* Password manager setup */
     "passwordManagerSetupHeading": "Finish setting up %p to use Autofill",
     "passwordManagerSetupStep1": {

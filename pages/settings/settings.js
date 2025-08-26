@@ -795,6 +795,104 @@ autoSummarizationOptions.forEach(function (option, idx) {
   })
 })
 
+/* AI Sound Settings */
+
+// Available sounds with embedded data URIs
+var availableSounds = {
+  notification: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAcBjuR1/LNeSsFJHfH8N2QQAoUXrPp66hVFApGnt/yvmAcBjiP1uu0dSgEKnq+8dF5HgIhc8bxzn0iBC17xfDGcQ==',
+  chime: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAcBjuR1/LNeSsFJHfH8N2QQAoUXrPp66hVFApGnt/yvmAcBjiP1uu0dSgEKnq+8dF5HgIhc8bxzn0iBC17xfDGcR8DH4PL8diNOwkWZbjt6oM8BBBN',
+  pop: 'data:audio/wav;base64,UklGRn4AAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YVoAAAAyQCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE4QCE=',
+  ping: 'data:audio/wav;base64,UklGRt4AAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YboAAAC/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/'
+}
+
+// Sound settings elements
+var aiSoundsEnabled = document.getElementById('ai-sounds-enabled')
+var aiResponseSound = document.getElementById('ai-response-sound')
+var testAiSound = document.getElementById('test-ai-sound')
+var aiSoundVolume = document.getElementById('ai-sound-volume')
+var volumeDisplay = document.getElementById('volume-display')
+var aiSoundControls = document.getElementById('ai-sound-controls')
+
+// Test sound function (inline implementation for settings page)
+function testSound (soundId, volume) {
+  var soundDataUri = availableSounds[soundId]
+  if (!soundDataUri) {
+    console.log('🔇 Cannot test sound:', soundId)
+    return
+  }
+
+  try {
+    var audio = new Audio(soundDataUri)
+    audio.volume = Math.max(0, Math.min(1, volume || 0.5))
+    audio.play().then(function () {
+      console.log('🔊 Test played:', soundId)
+    }).catch(function (error) {
+      console.warn('🔊 Test sound failed:', error.message)
+    })
+  } catch (error) {
+    console.warn('🔊 Test sound error:', error.message)
+  }
+}
+
+// Load current sound settings
+function loadSoundSettings () {
+  settings.get('soundSettings', function (soundSettings) {
+    if (!soundSettings) soundSettings = {}
+
+    aiSoundsEnabled.checked = soundSettings.enabled !== false
+    aiResponseSound.value = soundSettings.aiResponse || 'notification'
+    aiSoundVolume.value = Math.round((soundSettings.volume || 0.5) * 100)
+    volumeDisplay.textContent = aiSoundVolume.value + '%'
+
+    // Show/hide sound controls based on enabled state
+    updateSoundControlsVisibility()
+  })
+}
+
+// Update sound controls visibility
+function updateSoundControlsVisibility () {
+  if (aiSoundsEnabled.checked) {
+    aiSoundControls.style.display = 'block'
+  } else {
+    aiSoundControls.style.display = 'none'
+  }
+}
+
+// Save sound settings
+function saveSoundSettings () {
+  var soundSettingsData = {
+    enabled: aiSoundsEnabled.checked,
+    aiResponse: aiResponseSound.value,
+    volume: parseInt(aiSoundVolume.value) / 100
+  }
+
+  settings.set('soundSettings', soundSettingsData)
+  console.log('🔊 AI sound settings saved:', soundSettingsData)
+}
+
+// Event listeners
+aiSoundsEnabled.addEventListener('change', function () {
+  updateSoundControlsVisibility()
+  saveSoundSettings()
+})
+
+aiResponseSound.addEventListener('change', function () {
+  saveSoundSettings()
+})
+
+aiSoundVolume.addEventListener('input', function () {
+  volumeDisplay.textContent = this.value + '%'
+  saveSoundSettings()
+})
+
+testAiSound.addEventListener('click', function () {
+  var volume = parseInt(aiSoundVolume.value) / 100
+  testSound(aiResponseSound.value, volume)
+})
+
+// Initialize sound settings on page load
+loadSoundSettings()
+
 /* Hash Navigation Support */
 // Handle hash navigation for direct section access
 if (window.location.hash) {
