@@ -340,6 +340,28 @@
           data-string="settingsLLMSaveButton"
         ></button>
       </div>
+      
+      <div class="setting-section" style="margin-top: 20px;">
+        <label for="auto-summarization-sensitivity" data-string="settingsAutoSummarizationSensitivity"></label>
+        <div class="setting-section" id="auto-summarization-container">
+          <div class="setting-option">
+            <input type="radio" name="autoSummarizationLevel" id="auto-summarization-off" value="off" />
+            <label for="auto-summarization-off" data-string="settingsAutoSummarizationOff"></label>
+          </div>
+          <div class="setting-option">
+            <input type="radio" name="autoSummarizationLevel" id="auto-summarization-low" value="low" />
+            <label for="auto-summarization-low" data-string="settingsAutoSummarizationLow"></label>
+          </div>
+          <div class="setting-option">
+            <input type="radio" name="autoSummarizationLevel" id="auto-summarization-medium" value="medium" />
+            <label for="auto-summarization-medium" data-string="settingsAutoSummarizationMedium"></label>
+          </div>
+          <div class="setting-option">
+            <input type="radio" name="autoSummarizationLevel" id="auto-summarization-high" value="high" />
+            <label for="auto-summarization-high" data-string="settingsAutoSummarizationHigh"></label>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="settings-container" id="proxy-settings-container">

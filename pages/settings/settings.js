@@ -755,6 +755,46 @@ llmSaveButton.addEventListener('click', function () {
   }, 2000)
 })
 
+/* Auto-summarization settings */
+
+var autoSummarizationContainer = document.getElementById('auto-summarization-container')
+var autoSummarizationOptions = Array.from(autoSummarizationContainer.querySelectorAll('input[name=autoSummarizationLevel]'))
+
+function updateAutoSummarizationUI (level) {
+  var selectedOption = autoSummarizationOptions.find(option => option.value === level)
+  if (selectedOption) {
+    selectedOption.checked = true
+    
+    // Update visual selection
+    if (document.querySelector('#auto-summarization-container .setting-option.selected')) {
+      document.querySelector('#auto-summarization-container .setting-option.selected').classList.remove('selected')
+    }
+    selectedOption.parentNode.classList.add('selected')
+  }
+}
+
+function changeAutoSummarizationSetting (level) {
+  settings.set('autoSummarizationLevel', level)
+  updateAutoSummarizationUI(level)
+}
+
+settings.get('autoSummarizationLevel', function (value) {
+  if (value) {
+    updateAutoSummarizationUI(value)
+  } else {
+    // Default to 'off'
+    updateAutoSummarizationUI('off')
+  }
+})
+
+autoSummarizationOptions.forEach(function (option, idx) {
+  option.addEventListener('change', function () {
+    if (this.checked) {
+      changeAutoSummarizationSetting(this.value)
+    }
+  })
+})
+
 /* Hash Navigation Support */
 // Handle hash navigation for direct section access
 if (window.location.hash) {

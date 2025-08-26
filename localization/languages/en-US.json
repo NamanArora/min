@@ -294,6 +294,13 @@
     "settingsLLMModelGPT4oMini": "GPT-4o Mini (OpenAI)",
     "settingsLLMModelCustom": "Custom",
     "settingsLLMCustomModelPlaceholder": "Enter custom model name",
+    /* Auto-summarization settings */
+    "settingsAutoSummarizationSensitivity": "Auto-summarization sensitivity",
+    "settingsAutoSummarizationOff": "Off",
+    "settingsAutoSummarizationLow": "Low (very text-heavy pages)",
+    "settingsAutoSummarizationMedium": "Medium (mostly text pages)",
+    "settingsAutoSummarizationHigh": "High (any text-focused page)",
+    "autoSummaryIndicator": "Auto-generated summary",
     /* Password manager setup */
     "passwordManagerSetupHeading": "Finish setting up %p to use Autofill",
     "passwordManagerSetupStep1": {

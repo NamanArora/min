@@ -53,12 +53,33 @@ function onNavigate (tabId, url, isInPlace, isMainFrame, frameProcessId, frameRo
 
 // called whenever the page finishes loading
 function onPageLoad (tabId) {
+  console.log('📄 Page loaded for tab:', tabId, 'selected:', tabs.getSelected())
+
   // capture a preview image if a new page has been loaded
   if (tabId === tabs.getSelected()) {
     setTimeout(function () {
       // sometimes the page isn't visible until a short time after the did-finish-load event occurs
       captureCurrentTab()
     }, 250)
+
+    // Check for auto-summarization after a short delay to ensure content is fully loaded
+    setTimeout(function () {
+      if (tabId === tabs.getSelected()) {
+        console.log('⏰ Auto-summarization timer triggered for tab:', tabId)
+        var aiSidebar = require('ai/aiSidebar.js')
+        aiSidebar.analyzePageForAutoSummarization(function (err, result) {
+          if (!err && result && result.shouldSummarize) {
+            console.log('🎯 Auto-summarization conditions met for:', result.analysis.title)
+            console.log('📊 Analysis details:', result.analysis)
+            aiSidebar.triggerAutoSummarization()
+          } else {
+            console.log('📝 Auto-summarization check complete - no trigger')
+          }
+        })
+      } else {
+        console.log('⏰ Auto-summarization timer fired but tab is no longer selected')
+      }
+    }, 3000) // Wait 3 seconds for dynamic content to load
   }
 }
 
@@ -108,7 +129,7 @@ const webviews = {
   },
   events: [],
   IPCEvents: [],
-  hasViewForTab: function(tabId) {
+  hasViewForTab: function (tabId) {
     return tabId && tasks.getTaskContainingTab(tabId) && tasks.getTaskContainingTab(tabId).tabs.get(tabId).hasWebContents
   },
   bindEvent: function (event, fn) {
@@ -166,7 +187,7 @@ const webviews = {
 
       const viewMargins = webviews.viewMargins
 
-      let position = {
+      const position = {
         x: 0 + Math.round(viewMargins[3]),
         y: 0 + Math.round(viewMargins[0]) + navbarHeight,
         width: window.innerWidth - Math.round(viewMargins[1] + viewMargins[3]),
@@ -251,7 +272,7 @@ const webviews = {
         hasWebContents: false
       })
     }
-    //we may be destroying a view for which the tab object no longer exists, so this message should be sent unconditionally
+    // we may be destroying a view for which the tab object no longer exists, so this message should be sent unconditionally
     ipc.send('destroyView', id)
 
     delete webviews.viewFullscreenMap[id]
