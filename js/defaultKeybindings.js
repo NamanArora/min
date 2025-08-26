@@ -285,6 +285,16 @@ const defaultKeybindings = {
         })
       }
     })
+
+    keybindings.defineShortcut('showAISpotlight', function () {
+      /* AI Spotlight can't be opened in modal mode or focus mode */
+      if (modalMode.enabled() || focusMode.enabled()) {
+        return
+      }
+
+      // Send IPC to main process to show spotlight
+      ipc.send('showAISpotlight')
+    })
   }
 }
 

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Spotlight</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .spotlight-container {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.15),
+                0 10px 30px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            padding: 24px;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: rgba(0, 0, 0, 0.3);
+            }
+            
+            .spotlight-container {
+                background: rgba(40, 40, 40, 0.95);
+                border-color: rgba(255, 255, 255, 0.1);
+                color: #fff;
+            }
+            
+            #ai-spotlight-input {
+                background: rgba(255, 255, 255, 0.05) !important;
+                border-color: rgba(255, 255, 255, 0.2) !important;
+                color: #fff !important;
+            }
+            
+            #ai-spotlight-input::placeholder {
+                color: rgba(255, 255, 255, 0.6) !important;
+            }
+        }
+
+        .spotlight-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .spotlight-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #007AFF, #5856D6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .spotlight-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin: 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .spotlight-title {
+                color: #f5f5f7;
+            }
+        }
+
+        .spotlight-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        #ai-spotlight-input {
+            width: 100%;
+            min-height: 44px;
+            padding: 12px 16px;
+            border: 2px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            font-family: inherit;
+            font-size: 16px;
+            line-height: 1.4;
+            resize: none;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        #ai-spotlight-input:focus {
+            border-color: #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        #ai-spotlight-input::placeholder {
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        .spotlight-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .spotlight-button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .spotlight-button:hover {
+            background: #0056D3;
+            transform: translateY(-1px);
+        }
+
+        .spotlight-button:active {
+            transform: translateY(0);
+        }
+
+        .spotlight-shortcut {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.05);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .spotlight-shortcut {
+                color: rgba(255, 255, 255, 0.6);
+                background: rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        .spotlight-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .spotlight-button:disabled:hover {
+            transform: none;
+            background: #007AFF;
+        }
+
+        /* Animation for showing */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .spotlight-container {
+            animation: slideIn 0.2s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="spotlight-container">
+        <div class="spotlight-header">
+            <div class="spotlight-icon">AI</div>
+            <h3 class="spotlight-title">Ask AI</h3>
+        </div>
+        
+        <div class="spotlight-form">
+            <textarea 
+                id="ai-spotlight-input"
+                placeholder="Ask AI about this page..."
+                rows="1"
+                spellcheck="false"
+                autofocus
+            ></textarea>
+            
+            <div class="spotlight-actions">
+                <div class="spotlight-shortcut">⌘⇧⏎</div>
+                <button id="ai-spotlight-submit" class="spotlight-button">
+                    <span>Ask</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron')
+        
+        const input = document.getElementById('ai-spotlight-input')
+        const submitButton = document.getElementById('ai-spotlight-submit')
+        
+        // Auto-resize input
+        function autoResize() {
+            input.style.height = 'auto'
+            const scrollHeight = input.scrollHeight
+            const minHeight = 44
+            const maxHeight = 120
+            const newHeight = Math.max(minHeight, Math.min(maxHeight, scrollHeight))
+            input.style.height = newHeight + 'px'
+            
+            // Update window size based on content
+            const container = document.querySelector('.spotlight-container')
+            const containerHeight = container.scrollHeight
+            const containerWidth = container.scrollWidth
+            ipcRenderer.send('resize-spotlight-window', Math.max(400, containerWidth + 40), Math.max(150, containerHeight + 40))
+        }
+        
+        input.addEventListener('input', autoResize)
+        
+        // Submit on Enter (without Shift)
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                submitQuery()
+            } else if (e.key === 'Escape') {
+                e.preventDefault()
+                hideSpotlight()
+            }
+        })
+        
+        // Submit button click
+        submitButton.addEventListener('click', submitQuery)
+        
+        function submitQuery() {
+            const query = input.value.trim()
+            if (!query) return
+            
+            ipcRenderer.send('ai-spotlight-submit', query)
+            input.value = ''
+            autoResize()
+        }
+        
+        function hideSpotlight() {
+            ipcRenderer.send('ai-spotlight-hide')
+        }
+        
+        // Focus input when window shows
+        window.addEventListener('focus', () => {
+            setTimeout(() => input.focus(), 100)
+        })
+        
+        // Initial auto-resize
+        setTimeout(autoResize, 100)
+        
+        // Expose API for main process
+        window.electronAPI = {
+            resizeWindow: (width, height) => {
+                ipcRenderer.send('resize-spotlight-window', width, height)
+            }
+        }
+    </script>
+</body>
+</html>

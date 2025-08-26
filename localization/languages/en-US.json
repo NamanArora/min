@@ -226,6 +226,7 @@
     "appMenuInspectBrowser": "Inspect Browser",
     "appMenuInspectPage": "Inspect Page",
     "appMenuCapabilities": "Capabilities",
+    "appMenuAIAssistant": "AI Assistant",
     "appMenuPageSummarizer": "Page Summarizer",
     "appMenuSwitchLLM": "Switch LLM...",
     "appMenuWindow": "Window",
@@ -245,6 +246,15 @@
     "appMenuShowAll": "Show All",
     "appMenuQuit": "Quit %n",
     "appMenuBringToFront": "Bring All to Front",
+    /* AI Assistant */
+    "aiSidebarTitle": "AI Assistant",
+    "aiSpotlightPlaceholder": "Ask AI about this page...",
+    "aiSidebarEmptyTitle": "Ask AI about this page",
+    "aiSidebarEmptyDescription": "Press Cmd+Shift+Return to ask questions",
+    "aiClearConversations": "Clear All",
+    "aiSpotlightSend": "Ask",
+    "toggleAISidebar": "Toggle AI Sidebar",
+    "closeAISidebar": "Close AI Sidebar",
     /* Tab menu */
     "tabMenuNewWindow": "Move Tab to New Window",
     "tabMenuReload": "Reload",

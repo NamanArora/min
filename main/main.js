@@ -364,6 +364,17 @@ app.on('ready', function () {
 
   registerBundleProtocol(session.defaultSession)
 
+  // Initialize AI Spotlight IPC handlers
+  initializeSpotlightIPC()
+
+  // AI Spotlight IPC handler
+  ipc.on('showAISpotlight', function (e) {
+    const senderWindow = windows.windowFromContents(e.sender)
+    if (senderWindow && senderWindow.win) {
+      showSpotlight(senderWindow.win)
+    }
+  })
+
   const newWin = createWindow()
 
   getWindowWebContents(newWin).on('did-finish-load', function () {
