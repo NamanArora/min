@@ -184,5 +184,9 @@ require('searchbar/developmentModeNotification.js').initialize()
 require('searchbar/shortcutButtons.js').initialize()
 require('searchbar/calculatorPlugin.js').initialize()
 
+// AI modules
+require('ai/aiSidebar.js').initialize()
+require('ai/aiSpotlight.js').initialize()
+
 // once everything's loaded, start the session
 require('sessionRestore.js').restore()

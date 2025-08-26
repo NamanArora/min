@@ -2,7 +2,7 @@
 // This bypasses complex npm libraries and makes direct HTTP calls
 
 var directApiProvider = {
-  
+
   summarizeText: async function (text, pageTitle, pageUrl, llmConfig) {
     if (!llmConfig || !llmConfig.apiKey || !llmConfig.modelName) {
       throw new Error('LLM configuration missing: API key and model name required')
@@ -26,7 +26,7 @@ Please provide a 2-3 sentence summary focusing on the main points and key inform
     try {
       var apiCall = this.getApiFunction(provider)
       var summary = await apiCall(prompt, llmConfig, provider)
-      
+
       return {
         success: true,
         summary: summary,
@@ -51,7 +51,7 @@ Please provide a 2-3 sentence summary focusing on the main points and key inform
     if (modelLower.includes('gpt') || modelLower.includes('openai')) return 'openai'
     if (modelLower.includes('gemini')) return 'google'
     if (modelLower.includes('groq')) return 'groq'
-    
+
     // Default fallback
     return 'openai'
   },
@@ -76,7 +76,7 @@ Please provide a 2-3 sentence summary focusing on the main points and key inform
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${llmConfig.apiKey}`
+        Authorization: `Bearer ${llmConfig.apiKey}`
       },
       body: JSON.stringify({
         model: llmConfig.modelName,
@@ -155,7 +155,7 @@ Please provide a 2-3 sentence summary focusing on the main points and key inform
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${llmConfig.apiKey}`
+        Authorization: `Bearer ${llmConfig.apiKey}`
       },
       body: JSON.stringify({
         model: llmConfig.modelName,

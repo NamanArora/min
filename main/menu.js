@@ -353,6 +353,15 @@ function buildAppMenu (options = {}) {
       label: l('appMenuCapabilities'),
       submenu: [
         {
+          label: l('appMenuAIAssistant'),
+          click: function (item, window) {
+            sendIPCToWindow(window, 'toggleAISidebar')
+          }
+        },
+        {
+          type: 'separator'
+        },
+        {
           label: l('appMenuPageSummarizer'),
           click: function (item, window) {
             sendIPCToWindow(window, 'summarizePage')

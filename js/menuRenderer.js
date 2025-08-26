@@ -302,5 +302,11 @@ module.exports = {
         }
       })
     })
+
+    ipc.on('toggleAISidebar', function () {
+      var aiSidebar = require('ai/aiSidebar.js')
+      aiSidebar.toggle()
+      console.log('AI Sidebar toggled:', aiSidebar.isOpen ? 'opened' : 'closed')
+    })
   }
 }
