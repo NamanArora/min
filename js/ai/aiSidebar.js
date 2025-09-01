@@ -13,10 +13,14 @@ var aiSidebar = {
   // DOM elements (will be initialized after DOM is ready)
   sidebarEl: null,
   conversationsEl: null,
+  inputEl: null,
+  sendEl: null,
 
   initialize: function () {
     this.sidebarEl = document.getElementById('ai-sidebar')
     this.conversationsEl = document.getElementById('ai-conversations')
+    this.inputEl = document.getElementById('ai-input')
+    this.sendEl = document.getElementById('ai-send')
 
     // Set up close button listener
     var closeButton = document.getElementById('ai-sidebar-close')
@@ -33,10 +37,63 @@ var aiSidebar = {
     // Handle window resize
     window.addEventListener('resize', () => this.handleResize())
 
+    // Input handlers
+    if (this.inputEl) {
+      // Auto-grow on input
+      this.inputEl.addEventListener('input', () => this.autogrowInput())
+      // Submit on Enter; Shift+Enter inserts newline. Cmd/Ctrl+Enter also submits.
+      this.inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault()
+          this.submitInput()
+          return
+        }
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+          e.preventDefault()
+          this.submitInput()
+        }
+      })
+    }
+    if (this.sendEl) {
+      this.sendEl.addEventListener('click', () => this.submitInput())
+    }
+
     // Load saved state
     this.loadState()
 
     console.log('AI Sidebar initialized')
+  },
+
+  autogrowInput: function () {
+    if (!this.inputEl) return
+    this.inputEl.style.height = 'auto'
+    // Limit to max-height via CSS; scrollHeight will naturally stop increasing beyond max
+    this.inputEl.style.height = Math.min(this.inputEl.scrollHeight, 200) + 'px'
+  },
+
+  focusInput: function () {
+    if (this.inputEl) {
+      this.inputEl.focus()
+      this.autogrowInput()
+    }
+  },
+
+  submitInput: function () {
+    if (!this.inputEl) return
+    var text = (this.inputEl.value || '').trim()
+    if (!text) return
+
+    // Disable send briefly to avoid double submits
+    if (this.sendEl) this.sendEl.disabled = true
+
+    this.getCurrentPageContext((pageContext) => {
+      this.addConversation(text, pageContext)
+      // Reset input
+      this.inputEl.value = ''
+      this.autogrowInput()
+      if (this.sendEl) this.sendEl.disabled = false
+      this.scrollToBottom()
+    })
   },
 
   show: function () {
@@ -57,6 +114,7 @@ var aiSidebar = {
     this.saveState()
 
     console.log('AI Sidebar shown, width:', this.currentWidth)
+    this.focusInput()
   },
 
   hide: function () {

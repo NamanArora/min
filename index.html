@@ -344,26 +344,32 @@
     </div>
 
     <!-- AI Sidebar -->
-    <div id="ai-sidebar" class="theme-background-color theme-text-color" hidden>
-      <div id="ai-sidebar-header">
-        <h3 id="ai-sidebar-title" data-string="aiSidebarTitle">AI Assistant</h3>
-        <button id="ai-sidebar-close" class="i carbon:close" data-label="closeAISidebar"></button>
-      </div>
-      
-      <div id="ai-sidebar-content">
-        <div id="ai-conversations" class="has-thin-scrollbar"></div>
-        
-        <div id="ai-sidebar-empty" class="ai-empty-state">
-          <i class="i carbon:ibm-watson"></i>
-          <h4 data-string="aiSidebarEmptyTitle">Ask AI about this page</h4>
-          <p data-string="aiSidebarEmptyDescription">Press Cmd+Shift+Return to ask questions about the current page or get general assistance.</p>
+      <div id="ai-sidebar" class="theme-background-color theme-text-color" hidden>
+        <div id="ai-sidebar-header">
+          <h3 id="ai-sidebar-title" data-string="aiSidebarTitle">AI Assistant</h3>
+          <button id="ai-sidebar-close" class="i carbon:close" data-label="closeAISidebar"></button>
         </div>
         
-        <div id="ai-sidebar-actions">
-          <button id="ai-clear-conversations" class="secondary-button" data-string="aiClearConversations">Clear All</button>
+        <div id="ai-sidebar-content">
+          <div id="ai-conversations" class="has-thin-scrollbar"></div>
+          
+          <div id="ai-sidebar-empty" class="ai-empty-state">
+            <i class="i carbon:ibm-watson"></i>
+            <h4 data-string="aiSidebarEmptyTitle">Ask AI about this page</h4>
+            <p data-string="aiSidebarEmptyDescription">Press Cmd+Shift+Return to ask questions about the current page or get general assistance.</p>
+          </div>
+          
+          <div id="ai-sidebar-actions">
+            <button id="ai-clear-conversations" class="secondary-button" data-string="aiClearConversations">Clear All</button>
+          </div>
+
+          <!-- Input bar -->
+          <div id="ai-input-container">
+            <textarea id="ai-input" placeholder="Ask something about this page…" rows="1"></textarea>
+            <button id="ai-send" class="primary-button" data-string="aiSpotlightSend">Ask</button>
+          </div>
         </div>
       </div>
-    </div>
 
 
     <!-- add scripts in Gruntfile.js -->
