@@ -166,6 +166,8 @@ require('taskOverlay/taskOverlay.js').initialize()
 require('sessionRestore.js').initialize()
 require('bookmarkConverter.js').initialize()
 require('newTabPage.js').initialize()
+require('newTabTopSites.js').initialize()
+require('topSitesService.js').initialize()
 require('macHandoff.js').initialize()
 
 // Initialize Auto-Clean Tabs after tab state is set up

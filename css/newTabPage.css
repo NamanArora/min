@@ -56,3 +56,18 @@ body:not(.is-ntp) #ntp-content {
 #ntp-background-controls:not(:hover) #ntp-image-remove {
     opacity: 0;
 }
+
+/* Most Visited (Top Sites) */
+#ntp-content { display: flex; align-items: center; justify-content: center; }
+#ntp-top-sites { position: absolute; max-width: 1100px; width: 100%; padding: 16px; }
+#ntp-heading { margin: 0 0 12px; font-size: 18px; opacity: 0.9; text-align: center; }
+#ntp-sites-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.ntp-site-card { display: block; text-decoration: none; color: inherit; border: 1px solid #eee; border-radius: 10px; overflow: hidden; background: #fff; box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+.ntp-site-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.1); transition: transform .15s ease, box-shadow .15s ease; }
+.ntp-site-img { width: 100%; aspect-ratio: 5 / 3; background: #f7f7f8; display: flex; align-items: center; justify-content: center; }
+.ntp-site-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ntp-site-title { padding: 8px 10px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+
+@media (max-width: 1000px) { #ntp-sites-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 780px) { #ntp-sites-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) { #ntp-sites-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
