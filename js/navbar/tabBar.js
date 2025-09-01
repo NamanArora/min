@@ -7,6 +7,7 @@ const tabAudio = require('tabAudio.js')
 const dragula = require('dragula')
 const settings = require('util/settings/settings.js')
 const urlParser = require('util/urlParser.js')
+const autoCleanTabs = require('autoCleanTabs.js')
 
 const tabEditor = require('navbar/tabEditor.js')
 const progressBar = require('navbar/progressBar.js')
@@ -200,7 +201,9 @@ const tabBar = {
     empty(tabBar.containerInner)
     tabBar.tabElementMap = {}
 
-    tabs.get().forEach(function (tab) {
+    // Filter out hidden tabs when rendering the tab bar
+    var visibleTabs = autoCleanTabs.filterVisibleTabs(tabs.get())
+    visibleTabs.forEach(function (tab) {
       var el = tabBar.createTab(tab)
       tabBar.containerInner.appendChild(el)
       tabBar.tabElementMap[tab.id] = el
@@ -213,7 +216,18 @@ const tabBar = {
   },
   addTab: function (tabId) {
     var tab = tabs.get(tabId)
-    var index = tabs.getIndex(tabId)
+    // Skip rendering if hidden
+    if (autoCleanTabs.isHidden(tabId)) {
+      console.log('[AutoCleanTabs] Skipping addTab (hidden):', tabId)
+      return
+    }
+    // Compute visible index accounting for hidden tabs
+    var visibleTabs = autoCleanTabs.filterVisibleTabs(tabs.get())
+    var index = visibleTabs.findIndex(t => t.id === tabId)
+    if (index === -1) {
+      // became hidden between checks
+      return
+    }
 
     var tabEl = tabBar.createTab(tab)
     tabBar.containerInner.insertBefore(tabEl, tabBar.containerInner.childNodes[index])

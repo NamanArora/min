@@ -229,6 +229,14 @@
     "appMenuAIAssistant": "AI Assistant",
     "appMenuPageSummarizer": "Page Summarizer",
     "appMenuSwitchLLM": "Switch LLM...",
+    "appMenuAutoCleanEnable": "Auto-Clean Tabs: Enable",
+    "appMenuAutoCleanDisable": "Auto-Clean Tabs: Disable",
+    "appMenuAutoCleanRunCheckNow": "Auto-Clean Tabs: Run Check Now",
+    "appMenuAutoCleanDemoHideOne": "Auto-Clean Tabs: Demo Hide One Tab",
+    "appMenuAutoCleanShowAllHidden": "Auto-Clean Tabs: Show All Hidden Tabs",
+    "tabMenuHideTab": "Hide Tab",
+    "tabMenuShowTab": "Show Tab",
+    "tabMenuShowAllHiddenTabs": "Show All Hidden Tabs",
     "appMenuWindow": "Window",
     "appMenuMinimize": "Minimize",
     "appMenuClose": "Close",
@@ -312,6 +320,13 @@
     "settingsAISoundOff": "Off (No Sound)",
     "settingsAISoundTest": "Test",
     "settingsAISoundVolume": "Volume",
+    
+    /* Auto-Clean Tabs */
+    "settingsAutoCleanTabsToggle": "Auto-Clean Tabs",
+    "settingsAutoCleanTabsExplanation": "Automatically hide tabs inactive for a set number of days. Tabs remain open and searchable in Tasks.",
+    "settingsAutoCleanTabsDays": "Hide tabs inactive for",
+    "settingsAutoCleanTabsDaysLabel": "days",
+    "settingsAutoCleanTabsShowAll": "Show All Hidden Tabs",
     /* Password manager setup */
     "passwordManagerSetupHeading": "Finish setting up %p to use Autofill",
     "passwordManagerSetupStep1": {

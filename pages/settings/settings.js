@@ -399,6 +399,73 @@ usageStatisticsCheckbox.addEventListener('change', function (e) {
   settings.set('collectUsageStats', this.checked)
 })
 
+/* Auto-Clean Tabs settings */
+
+var autoCleanTabsCheckbox = document.getElementById('checkbox-auto-clean-tabs')
+var autoCleanTabsDaysInput = document.getElementById('auto-clean-tabs-days')
+var autoCleanTabsOptions = document.getElementById('auto-clean-tabs-options')
+var showAllHiddenTabsButton = document.getElementById('show-all-hidden-tabs')
+var hiddenTabsCount = document.getElementById('hidden-tabs-count')
+
+function loadAutoCleanTabsSettings () {
+  settings.get('autoCleanTabs', function (value) {
+    var s = value || { enabled: false, daysThreshold: 3, hiddenTabIds: [] }
+    console.log('[Settings][AutoCleanTabs] load', s)
+    autoCleanTabsCheckbox.checked = !!s.enabled
+    autoCleanTabsDaysInput.value = s.daysThreshold || 3
+    updateAutoCleanTabsVisibility()
+    updateHiddenTabsCount()
+  })
+}
+
+function updateAutoCleanTabsVisibility () {
+  autoCleanTabsOptions.hidden = !autoCleanTabsCheckbox.checked
+}
+
+function updateHiddenTabsCount () {
+  settings.get('autoCleanTabs', function (value) {
+    var s = value || { hiddenTabIds: [] }
+    var count = (s.hiddenTabIds && Array.isArray(s.hiddenTabIds)) ? s.hiddenTabIds.length : 0
+    hiddenTabsCount.textContent = count > 0 ? '(' + count + ' tabs hidden)' : ''
+    hiddenTabsCount.style.display = count > 0 ? 'inline' : 'none'
+    showAllHiddenTabsButton.style.display = count > 0 ? 'inline-block' : 'none'
+  })
+}
+
+function saveAutoCleanTabsSettings () {
+  settings.get('autoCleanTabs', function (current) {
+    var s = current || { enabled: false, daysThreshold: 3, hiddenTabIds: [] }
+    s.enabled = !!autoCleanTabsCheckbox.checked
+    s.daysThreshold = parseInt(autoCleanTabsDaysInput.value) || 3
+    console.log('[Settings][AutoCleanTabs] save', s)
+    settings.set('autoCleanTabs', s)
+  })
+}
+
+autoCleanTabsCheckbox.addEventListener('change', function () {
+  updateAutoCleanTabsVisibility()
+  saveAutoCleanTabsSettings()
+})
+
+autoCleanTabsDaysInput.addEventListener('change', function () {
+  var v = parseInt(this.value)
+  if (v < 1) this.value = 1
+  if (v > 30) this.value = 30
+  saveAutoCleanTabsSettings()
+})
+
+showAllHiddenTabsButton.addEventListener('click', function () {
+  console.log('[Settings][AutoCleanTabs] Show All Hidden Tabs requested')
+  postMessage({ message: 'showAllHiddenTabs' })
+  setTimeout(updateHiddenTabsCount, 200)
+})
+
+settings.listen('autoCleanTabs', function () {
+  updateHiddenTabsCount()
+})
+
+loadAutoCleanTabsSettings()
+
 /* default search engine setting */
 
 var searchEngineDropdown = document.getElementById('default-search-engine')

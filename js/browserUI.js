@@ -10,6 +10,7 @@ var focusMode = require('focusMode.js')
 var tabBar = require('navbar/tabBar.js')
 var tabEditor = require('navbar/tabEditor.js')
 var searchbar = require('searchbar/searchbar.js')
+var autoCleanTabs = require('autoCleanTabs.js')
 
 /* creates a new task */
 
@@ -285,4 +286,26 @@ module.exports = {
   switchToTab,
   moveTabLeft,
   moveTabRight
+}
+
+// IPC handlers for Auto-Clean Tabs (from main menu or settings)
+if (typeof ipc !== 'undefined') {
+  ipc.on('showAllHiddenTabs', function () {
+    console.log('[AutoCleanTabs][IPC] showAllHiddenTabs')
+    autoCleanTabs.showAllTabs()
+  })
+  ipc.on('autoCleanRunCheckNow', function () {
+    console.log('[AutoCleanTabs][IPC] autoCleanRunCheckNow')
+    autoCleanTabs.runCheckNow()
+  })
+  ipc.on('autoCleanDemoHideOneTab', function () {
+    console.log('[AutoCleanTabs][IPC] autoCleanDemoHideOneTab')
+    autoCleanTabs.demoHideOneTab()
+  })
+  ipc.on('setAutoCleanEnabled', function (e, enabled) {
+    console.log('[AutoCleanTabs][IPC] setAutoCleanEnabled ->', enabled)
+    var current = Object.assign({}, autoCleanTabs.defaultSettings, settings.get('autoCleanTabs'))
+    current.enabled = !!enabled
+    settings.set('autoCleanTabs', current)
+  })
 }

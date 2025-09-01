@@ -168,6 +168,9 @@ require('bookmarkConverter.js').initialize()
 require('newTabPage.js').initialize()
 require('macHandoff.js').initialize()
 
+// Initialize Auto-Clean Tabs after tab state is set up
+require('autoCleanTabs.js').init()
+
 // default searchbar plugins
 
 require('searchbar/placesPlugin.js').initialize()

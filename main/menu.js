@@ -358,6 +358,42 @@ function buildAppMenu (options = {}) {
             sendIPCToWindow(window, 'toggleAISidebar')
           }
         },
+        { type: 'separator' },
+        {
+          label: l('appMenuAutoCleanEnable'),
+          click: function (item, window) {
+            console.log('[Menu] Enable Auto-Clean Tabs')
+            sendIPCToWindow(window, 'setAutoCleanEnabled', true)
+          }
+        },
+        {
+          label: l('appMenuAutoCleanDisable'),
+          click: function (item, window) {
+            console.log('[Menu] Disable Auto-Clean Tabs')
+            sendIPCToWindow(window, 'setAutoCleanEnabled', false)
+          }
+        },
+        {
+          label: l('appMenuAutoCleanRunCheckNow'),
+          click: function (item, window) {
+            console.log('[Menu] Auto-Clean: Run Check Now')
+            sendIPCToWindow(window, 'autoCleanRunCheckNow')
+          }
+        },
+        {
+          label: l('appMenuAutoCleanDemoHideOne'),
+          click: function (item, window) {
+            console.log('[Menu] Auto-Clean: Demo Hide One Tab')
+            sendIPCToWindow(window, 'autoCleanDemoHideOneTab')
+          }
+        },
+        {
+          label: l('appMenuAutoCleanShowAllHidden'),
+          click: function (item, window) {
+            console.log('[Menu] Auto-Clean: Show All Hidden Tabs')
+            sendIPCToWindow(window, 'showAllHiddenTabs')
+          }
+        },
         {
           type: 'separator'
         },

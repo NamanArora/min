@@ -3,6 +3,8 @@ const browserUI = require('browserUI.js')
 const webviews = require('webviews.js')
 const readerView = require('readerView.js')
 const urlParser = require('util/urlParser.js')
+const settings = require('util/settings/settings.js')
+const autoCleanTabs = require('autoCleanTabs.js')
 
 const tabContextMenu = {
   show: function (tabId) {
@@ -71,6 +73,29 @@ const tabContextMenu = {
         }
       }
     })
+
+    // Auto-Clean Tabs contextual actions
+    const autoCleanSettings = settings.get('autoCleanTabs') || {}
+    if (autoCleanSettings.enabled) {
+      tabMenu.push([]) // separator
+      if (autoCleanTabs.isHidden(tabId)) {
+        tabMenu[1].push({
+          label: l('tabMenuShowTab') || 'Show Tab',
+          click: function () { autoCleanTabs.showTab(tabId) }
+        })
+      } else {
+        tabMenu[1].push({
+          label: l('tabMenuHideTab') || 'Hide Tab',
+          click: function () { autoCleanTabs.hideTab(tabId) }
+        })
+      }
+      if (autoCleanTabs.getHiddenTabCount() > 0) {
+        tabMenu[1].push({
+          label: l('tabMenuShowAllHiddenTabs') || ('Show All Hidden Tabs (' + autoCleanTabs.getHiddenTabCount() + ')'),
+          click: function () { autoCleanTabs.showAllTabs() }
+        })
+      }
+    }
 
     remoteMenu.open(tabMenu)
   },

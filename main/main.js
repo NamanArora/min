@@ -443,6 +443,12 @@ ipc.on('focusMainWebContents', function () {
   getWindowWebContents(windows.getCurrent()).focus()
 })
 
+// Auto-Clean Tabs: route requests from settings/preload to the current window
+ipc.on('showAllHiddenTabs', function (e) {
+  const senderWindow = windows.windowFromContents(e.sender)
+  sendIPCToWindow(senderWindow || windows.getCurrent(), 'showAllHiddenTabs')
+})
+
 ipc.on('showSecondaryMenu', function (event, data) {
   if (!secondaryMenu) {
     secondaryMenu = buildAppMenu({ secondary: true })
