@@ -160,12 +160,6 @@ var aiSidebar = {
   removeMention: function (title) {
     if (this.selectedMentions.has(title)) {
       this.selectedMentions.delete(title)
-      // remove occurrences like "@Title, " or "@Title," at end or anywhere
-      if (this.inputEl) {
-        var pattern = new RegExp('@' + this.escapeRegExp(title) + '(,\u0020)?', 'g')
-        this.inputEl.value = this.inputEl.value.replace(pattern, '')
-        this.autogrowInput()
-      }
       this.renderChips()
       // refresh mention list (so it can show this title again)
       this.handleMentionTrigger()
@@ -176,18 +170,10 @@ var aiSidebar = {
     var arr = Array.from(this.selectedMentions)
     var last = arr[arr.length - 1]
     if (!last) return false
-    // remove trailing "@Title, " if present; if not present, still remove chip
-    var value = this.inputEl.value
-    var pat = new RegExp('@' + this.escapeRegExp(last) + '(,\u0020)?$')
-    var newVal = value.replace(pat, '')
     this.selectedMentions.delete(last)
     this.renderChips()
-    if (newVal !== value) {
-      this.inputEl.value = newVal
-      this.autogrowInput()
-      return true
-    }
-    return false
+    // mentions are chip-only; nothing to remove in input text
+    return true
   },
 
   // Mention feature
@@ -301,12 +287,10 @@ var aiSidebar = {
     var triggerIndex = val.lastIndexOf('@', caret - 1)
     if (triggerIndex === -1) return
     var before = val.slice(0, triggerIndex)
-    var after = val.slice(caret) // keep remaining
-    var insertion = '@' + title + ', '
-    this.inputEl.value = before + insertion + after
-    // place caret after insertion
-    var newCaret = (before + insertion).length
-    this.inputEl.setSelectionRange(newCaret, newCaret)
+    var after = val.slice(caret) // remove the @query portion entirely
+    this.inputEl.value = before + after
+    // place caret where @ started
+    this.inputEl.setSelectionRange(before.length, before.length)
     this.selectedMentions.add(title)
     this.renderChips()
     this.closeMentionList()
