@@ -15,12 +15,18 @@ var aiSidebar = {
   conversationsEl: null,
   inputEl: null,
   sendEl: null,
+  mentionEl: null,
+  mentionOpen: false,
+  mentionItems: [],
+  mentionSelectedIndex: -1,
+  selectedMentions: new Set(),
 
   initialize: function () {
     this.sidebarEl = document.getElementById('ai-sidebar')
     this.conversationsEl = document.getElementById('ai-conversations')
     this.inputEl = document.getElementById('ai-input')
     this.sendEl = document.getElementById('ai-send')
+    this.mentionEl = document.getElementById('ai-mention-list')
 
     // Set up close button listener
     var closeButton = document.getElementById('ai-sidebar-close')
@@ -40,17 +46,36 @@ var aiSidebar = {
     // Input handlers
     if (this.inputEl) {
       // Auto-grow on input
-      this.inputEl.addEventListener('input', () => this.autogrowInput())
+      this.inputEl.addEventListener('input', () => {
+        this.autogrowInput()
+        this.handleMentionTrigger()
+      })
       // Submit on Enter; Shift+Enter inserts newline. Cmd/Ctrl+Enter also submits.
       this.inputEl.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault()
-          this.submitInput()
+          if (this.mentionOpen && this.mentionSelectedIndex >= 0) {
+            this.applyMentionSelection()
+          } else {
+            this.submitInput()
+          }
           return
         }
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
           e.preventDefault()
-          this.submitInput()
+          if (this.mentionOpen && this.mentionSelectedIndex >= 0) {
+            this.applyMentionSelection()
+          } else {
+            this.submitInput()
+          }
+        }
+        if (this.mentionOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+          e.preventDefault()
+          this.moveMentionSelection(e.key === 'ArrowDown' ? 1 : -1)
+        }
+        if (this.mentionOpen && e.key === 'Escape') {
+          e.preventDefault()
+          this.closeMentionList()
         }
       })
     }
@@ -88,12 +113,136 @@ var aiSidebar = {
 
     this.getCurrentPageContext((pageContext) => {
       this.addConversation(text, pageContext)
+      // reset selected mentions for next message
+      this.selectedMentions = new Set()
       // Reset input
       this.inputEl.value = ''
       this.autogrowInput()
       if (this.sendEl) this.sendEl.disabled = false
       this.scrollToBottom()
     })
+  },
+
+  // Mention feature
+  handleMentionTrigger: function () {
+    if (!this.inputEl) return
+    var val = this.inputEl.value
+    var caret = this.inputEl.selectionStart
+    // find the last '@' before caret not preceded by a non-space delimiter
+    var triggerIndex = val.lastIndexOf('@', caret - 1)
+    if (triggerIndex === -1) { this.closeMentionList(); return }
+
+    // ensure there is no whitespace/comma between @ and caret
+    var between = val.slice(triggerIndex + 1, caret)
+    if (/\s|[,]/.test(between)) { this.closeMentionList(); return }
+
+    var query = between.trim().toLowerCase()
+    var titles = this.getAllTabTitles().filter(t => !this.selectedMentions.has(t))
+    var filtered = titles.filter(t => t.toLowerCase().includes(query))
+
+    if (filtered.length === 0) { this.closeMentionList(); return }
+    this.openMentionList(filtered)
+  },
+
+  getAllTabTitles: function () {
+    var titles = []
+    try {
+      if (typeof tasks !== 'undefined' && tasks && typeof tasks.forEach === 'function') {
+        tasks.forEach(task => {
+          if (task && task.tabs && typeof task.tabs.get === 'function') {
+            task.tabs.get().forEach(tab => {
+              if (tab && tab.title) titles.push(tab.title)
+            })
+          }
+        })
+      }
+    } catch (e) {
+      console.warn('[AI Sidebar] Failed to collect tab titles:', e && e.message)
+    }
+    // dedupe while preserving order
+    return titles.filter((t, i) => titles.indexOf(t) === i)
+  },
+
+  openMentionList: function (items) {
+    if (!this.mentionEl) return
+    this.mentionItems = items
+    this.renderMentionList()
+    this.mentionEl.hidden = false
+    this.mentionOpen = true
+
+    // default selection to current tab title if available
+    var defaultTitle = null
+    try { defaultTitle = tabs.get(tabs.getSelected())?.title || null } catch (e) {}
+    var idx = (defaultTitle ? items.indexOf(defaultTitle) : -1)
+    this.mentionSelectedIndex = idx >= 0 ? idx : 0
+    this.updateMentionSelection()
+  },
+
+  closeMentionList: function () {
+    if (!this.mentionEl) return
+    this.mentionEl.hidden = true
+    this.mentionOpen = false
+    this.mentionItems = []
+    this.mentionSelectedIndex = -1
+  },
+
+  renderMentionList: function () {
+    if (!this.mentionEl) return
+    this.mentionEl.innerHTML = ''
+    this.mentionItems.forEach((t, i) => {
+      var item = document.createElement('div')
+      item.className = 'ai-mention-item'
+      item.textContent = t
+      item.addEventListener('mouseenter', () => {
+        this.mentionSelectedIndex = i
+        this.updateMentionSelection()
+      })
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault()
+        this.mentionSelectedIndex = i
+        this.applyMentionSelection()
+      })
+      this.mentionEl.appendChild(item)
+    })
+  },
+
+  updateMentionSelection: function () {
+    if (!this.mentionEl) return
+    var children = Array.from(this.mentionEl.children)
+    children.forEach((el, idx) => {
+      if (idx === this.mentionSelectedIndex) el.classList.add('selected')
+      else el.classList.remove('selected')
+    })
+    // ensure selected item is in view
+    var selected = children[this.mentionSelectedIndex]
+    if (selected && typeof selected.scrollIntoView === 'function') {
+      selected.scrollIntoView({ block: 'nearest' })
+    }
+  },
+
+  moveMentionSelection: function (delta) {
+    if (!this.mentionOpen || this.mentionItems.length === 0) return
+    this.mentionSelectedIndex = (this.mentionSelectedIndex + delta + this.mentionItems.length) % this.mentionItems.length
+    this.updateMentionSelection()
+  },
+
+  applyMentionSelection: function () {
+    if (!this.inputEl || !this.mentionOpen || this.mentionSelectedIndex < 0) return
+    var title = this.mentionItems[this.mentionSelectedIndex]
+    var val = this.inputEl.value
+    var caret = this.inputEl.selectionStart
+    var triggerIndex = val.lastIndexOf('@', caret - 1)
+    if (triggerIndex === -1) return
+    var before = val.slice(0, triggerIndex)
+    var after = val.slice(caret) // keep remaining
+    var insertion = '@' + title + ', '
+    this.inputEl.value = before + insertion + after
+    // place caret after insertion
+    var newCaret = (before + insertion).length
+    this.inputEl.setSelectionRange(newCaret, newCaret)
+    this.selectedMentions.add(title)
+    this.closeMentionList()
+    this.autogrowInput()
   },
 
   show: function () {
