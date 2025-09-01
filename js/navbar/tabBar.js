@@ -83,6 +83,11 @@ const tabBar = {
     var titleContainer = document.createElement('div')
     titleContainer.className = 'title-container'
 
+    // favicon (will show when available)
+    var favicon = document.createElement('img')
+    favicon.className = 'tab-favicon'
+    titleContainer.appendChild(favicon)
+
     var title = document.createElement('span')
     title.className = 'title'
 
@@ -195,6 +200,29 @@ const tabBar = {
       insecureIcon.className = 'icon-tab-not-secure tab-icon tab-info-icon i carbon:unlocked'
       insecureIcon.title = l('connectionNotSecure')
       iconArea.appendChild(insecureIcon)
+    }
+
+    // update favicon image and toggle class
+    var favEl = tabEl.querySelector('.tab-favicon')
+    let faviconSet = false
+    if (tabData.favicon && tabData.favicon.url) {
+      favEl.src = tabData.favicon.url
+      faviconSet = true
+    } else {
+      // fallback to Google S2 favicon service for common sites
+      try {
+        const h = new URL(tabData.url).hostname
+        if (h && !urlParser.isInternalURL(tabData.url)) {
+          favEl.src = 'https://www.google.com/s2/favicons?sz=64&domain=' + encodeURIComponent(h)
+          faviconSet = true
+        }
+      } catch (e) {}
+    }
+    if (faviconSet) {
+      tabEl.classList.add('has-favicon')
+    } else {
+      favEl.removeAttribute('src')
+      tabEl.classList.remove('has-favicon')
     }
   },
   updateAll: function () {

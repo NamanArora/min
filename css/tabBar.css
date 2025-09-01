@@ -246,6 +246,19 @@ body:not(.touch)
   flex: 1;
   overflow: hidden;
 }
+.tab-item .title-container .tab-favicon {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: contain;
+  display: none;
+}
+.tab-item.has-favicon .title-container { padding-left: 1.8rem; }
+.tab-item.has-favicon .title-container .tab-favicon { display: inline-block; }
 .compact-tabs .tab-item .title {
   font-size: 14px;
 }

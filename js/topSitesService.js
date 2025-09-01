@@ -2,6 +2,7 @@
 
 const fs = require('fs')
 const path = require('path')
+const { fileURLToPath } = require('url')
 
 const places = require('places/places.js')
 
@@ -49,7 +50,15 @@ function getPreviewPath (url) {
 function getOrRequestPreview (url) {
   ensureDir(PREVIEW_DIR)
   const p = getPreviewPath(url)
-  if (fileFresh(p)) return 'file://' + p
+  if (fileFresh(p)) {
+    // Convert fresh file to data URL for embedding in JSON
+    try {
+      const b64 = fs.readFileSync(p).toString('base64')
+      return 'data:image/png;base64,' + b64
+    } catch (e) {
+      // fall through to request
+    }
+  }
   // request background preview from main
   try { pending.add(url); ipc.send('requestLinkPreview', { href: url }); console.log('[TopSites][Service] Preview requested for', url) } catch (e) {}
   return null
@@ -84,6 +93,37 @@ function schedule () {
   setInterval(computeTopSites, DAILY)
 }
 
+function migrateFileUrlsToDataUrls () {
+  try {
+    const js = loadJSON(DATA_FILE)
+    if (!js || !Array.isArray(js.items)) return
+    let changed = false
+    js.items = js.items.map((it) => {
+      try {
+        if (it && typeof it.image === 'string' && it.image.startsWith('file:')) {
+          const p = fileURLToPath(it.image)
+          const b64 = fs.readFileSync(p).toString('base64')
+          const dataUrl = 'data:image/png;base64,' + b64
+          changed = true
+          return { ...it, image: dataUrl }
+        }
+      } catch (e) {
+        console.warn('[TopSites][Service] Migration failed for', it && it.url, e && e.message)
+      }
+      return it
+    })
+    if (changed) {
+      js.updatedAt = js.updatedAt || Date.now()
+      saveJSON(DATA_FILE, js)
+      console.log('[TopSites][Service] Migration complete: converted file:// images to data URLs')
+    } else {
+      console.log('[TopSites][Service] Migration: no file:// images found')
+    }
+  } catch (e) {
+    console.warn('[TopSites][Service] Migration error:', e && e.message)
+  }
+}
+
 function setupPreviewListener () {
   ipc.on('linkPreviewData', function (event, payload) {
     try {
@@ -95,10 +135,10 @@ function setupPreviewListener () {
         const base64 = payload.imageUrl.split(',')[1]
         if (base64) {
           fs.writeFile(p, Buffer.from(base64, 'base64'), function () {
-            // Update JSON file entry if present
+            // Update JSON file entry if present with data URL (not file path)
             const js = loadJSON(DATA_FILE) || { items: [] }
-            const fileUrl = 'file://' + p
-            js.items = (js.items || []).map(it => it.url === payload.href ? { ...it, image: fileUrl } : it)
+            const dataUrl = 'data:image/png;base64,' + base64
+            js.items = (js.items || []).map(it => it.url === payload.href ? { ...it, image: dataUrl } : it)
             js.updatedAt = js.updatedAt || Date.now()
             saveJSON(DATA_FILE, js)
             console.log('[TopSites][Service] Preview saved for', payload.href)
@@ -112,6 +152,7 @@ function setupPreviewListener () {
 function initialize () {
   console.log('[TopSites][Service] Initialize')
   ensureDir(PREVIEW_DIR)
+  migrateFileUrlsToDataUrls()
   schedule()
   setupPreviewListener()
 }
