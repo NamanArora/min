@@ -20,6 +20,7 @@ var aiSidebar = {
   mentionItems: [],
   mentionSelectedIndex: -1,
   selectedMentions: new Set(),
+  chipsEl: null,
 
   initialize: function () {
     this.sidebarEl = document.getElementById('ai-sidebar')
@@ -27,6 +28,7 @@ var aiSidebar = {
     this.inputEl = document.getElementById('ai-input')
     this.sendEl = document.getElementById('ai-send')
     this.mentionEl = document.getElementById('ai-mention-list')
+    this.chipsEl = document.getElementById('ai-chips')
 
     // Set up close button listener
     var closeButton = document.getElementById('ai-sidebar-close')
@@ -67,6 +69,14 @@ var aiSidebar = {
             this.applyMentionSelection()
           } else {
             this.submitInput()
+          }
+        }
+        // Backspace removes last chip if input is empty or cursor is at start of last mention text
+        if (e.key === 'Backspace') {
+          var value = this.inputEl.value
+          var atEnd = this.inputEl.selectionStart === this.inputEl.selectionEnd && this.inputEl.selectionStart === value.length
+          if ((value.trim().length === 0 || atEnd) && this.removeLastMentionFromInput()) {
+            e.preventDefault()
           }
         }
         if (this.mentionOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
@@ -115,12 +125,69 @@ var aiSidebar = {
       this.addConversation(text, pageContext)
       // reset selected mentions for next message
       this.selectedMentions = new Set()
+      this.renderChips()
       // Reset input
       this.inputEl.value = ''
       this.autogrowInput()
       if (this.sendEl) this.sendEl.disabled = false
       this.scrollToBottom()
     })
+  },
+
+  renderChips: function () {
+    if (!this.chipsEl) return
+    this.chipsEl.innerHTML = ''
+    Array.from(this.selectedMentions).forEach(title => {
+      var chip = document.createElement('span')
+      chip.className = 'ai-chip'
+      var label = document.createElement('span')
+      label.textContent = title
+      var remove = document.createElement('button')
+      remove.className = 'chip-remove'
+      remove.setAttribute('aria-label', 'Remove')
+      remove.textContent = '×'
+      remove.addEventListener('click', () => {
+        this.removeMention(title)
+      })
+      chip.appendChild(label)
+      chip.appendChild(remove)
+      this.chipsEl.appendChild(chip)
+    })
+  },
+
+  escapeRegExp: function (s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') },
+
+  removeMention: function (title) {
+    if (this.selectedMentions.has(title)) {
+      this.selectedMentions.delete(title)
+      // remove occurrences like "@Title, " or "@Title," at end or anywhere
+      if (this.inputEl) {
+        var pattern = new RegExp('@' + this.escapeRegExp(title) + '(,\u0020)?', 'g')
+        this.inputEl.value = this.inputEl.value.replace(pattern, '')
+        this.autogrowInput()
+      }
+      this.renderChips()
+      // refresh mention list (so it can show this title again)
+      this.handleMentionTrigger()
+    }
+  },
+
+  removeLastMentionFromInput: function () {
+    var arr = Array.from(this.selectedMentions)
+    var last = arr[arr.length - 1]
+    if (!last) return false
+    // remove trailing "@Title, " if present; if not present, still remove chip
+    var value = this.inputEl.value
+    var pat = new RegExp('@' + this.escapeRegExp(last) + '(,\u0020)?$')
+    var newVal = value.replace(pat, '')
+    this.selectedMentions.delete(last)
+    this.renderChips()
+    if (newVal !== value) {
+      this.inputEl.value = newVal
+      this.autogrowInput()
+      return true
+    }
+    return false
   },
 
   // Mention feature
@@ -241,6 +308,7 @@ var aiSidebar = {
     var newCaret = (before + insertion).length
     this.inputEl.setSelectionRange(newCaret, newCaret)
     this.selectedMentions.add(title)
+    this.renderChips()
     this.closeMentionList()
     this.autogrowInput()
   },
