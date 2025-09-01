@@ -1,0 +1,42 @@
+.import-section { margin: 16px 0; }
+.checkbox-row label { margin-right: 16px; }
+.checkbox-row label { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.checkbox-row input[type="checkbox"] { width: 16px; height: 16px; }
+#import-actions { margin-top: 16px; display: flex; align-items: center; gap: 12px; }
+.status { color: #666; }
+.advanced { margin-top: 24px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.05); }
+.manual-buttons button { margin-right: 8px; }
+.import-section label { display: block; margin-bottom: 6px; }
+
+/* Layout improvements */
+#import-wizard-container { max-width: 720px; }
+.import-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) {
+  .import-grid { grid-template-columns: 1fr; }
+}
+
+/* Buttons */
+#start-import {
+  background: #3B82F6; color: #fff; border: none; border-radius: 6px;
+  padding: 8px 14px; cursor: pointer; font-weight: 600;
+}
+#start-import:hover { background: #2563EB; }
+.manual-buttons button {
+  background: #F3F4F6; border: 1px solid #E5E7EB; border-radius: 6px; padding: 6px 12px; cursor: pointer;
+}
+.manual-buttons button:hover { background: #E5E7EB; }
+
+/* Inputs */
+select#browser-select, select#profile-select {
+  width: 100%; max-width: 320px; padding: 6px 10px; border-radius: 6px; border: 1px solid #E5E7EB;
+  background: #fff;
+}
+
+/* Card-style container */
+#import-wizard-container {
+  background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+h3 { margin-top: 0; }
+.help-text { opacity: 0.85; margin-top: 8px; }

@@ -358,6 +358,14 @@ function buildAppMenu (options = {}) {
             sendIPCToWindow(window, 'toggleAISidebar')
           }
         },
+        {
+          label: l('appMenuImportData'),
+          click: function (item, window) {
+            sendIPCToWindow(window, 'addTab', {
+              url: 'min://app/pages/import/index.html'
+            })
+          }
+        },
         { type: 'separator' },
         {
           label: l('appMenuAutoCleanEnable'),

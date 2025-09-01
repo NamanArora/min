@@ -510,6 +510,388 @@ webviews.bindIPC('downloadFile', function (tabId, args) {
   }
 })
 
+// Import Wizard handlers for internal page bridge
+webviews.bindIPC('importWizardChromeBookmarksAuto', async function (tabId, args) {
+  try {
+    const fs = require('fs')
+    const path = require('path')
+    const os = require('os')
+    const places = require('places/places.js')
+    const req = (args && args[0]) || {}
+    const profile = req.profile || 'Default'
+
+    function getChromeProfileDir (profileName) {
+      const home = os.homedir()
+      if (process.platform === 'darwin') {
+        return path.join(home, 'Library', 'Application Support', 'Google', 'Chrome', profileName || 'Default')
+      } else if (process.platform === 'win32') {
+        const localAppData = process.env.LOCALAPPDATA || path.join(home, 'AppData', 'Local')
+        return path.join(localAppData, 'Google', 'Chrome', 'User Data', profileName || 'Default')
+      } else {
+        return path.join(home, '.config', 'google-chrome', profileName || 'Default')
+      }
+    }
+
+    const bookmarksPath = path.join(getChromeProfileDir(profile), 'Bookmarks')
+    if (!fs.existsSync(bookmarksPath)) {
+      webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: false, type: 'chromeBookmarks', error: 'not_found' }])
+      return
+    }
+
+    function parseChromeTime (microsecondsStr) {
+      try {
+        const micro = BigInt(microsecondsStr || '0')
+        if (micro === 0n) return Date.now()
+        const epochDiffMs = 11644473600000n
+        const ms = micro / 1000n - epochDiffMs
+        return Number(ms)
+      } catch { return Date.now() }
+    }
+
+    function traverse (node, parents, out) {
+      if (!node) return
+      if (node.type === 'url' && node.url) {
+        const data = {
+          title: node.name || node.url,
+          isBookmarked: true,
+          tags: parents.filter(Boolean).map(t => String(t).replace(/\s/g, '-')),
+          lastVisit: parseChromeTime(node.date_added)
+        }
+        out.push({ url: node.url, data })
+      } else if (node.type === 'folder' && Array.isArray(node.children)) {
+        const newParents = parents.concat(node.name || null)
+        node.children.forEach(child => traverse(child, newParents, out))
+      } else if (Array.isArray(node)) {
+        node.forEach(child => traverse(child, parents, out))
+      } else if (node.roots) {
+        traverse(node.roots.bookmark_bar, parents, out)
+        traverse(node.roots.other, parents, out)
+        traverse(node.roots.synced, parents, out)
+      }
+    }
+
+    const raw = fs.readFileSync(bookmarksPath, 'utf-8')
+    const json = JSON.parse(raw)
+    const collected = []
+    traverse(json, [], collected)
+    let count = 0
+    for (const item of collected) {
+      await places.updateItem(item.url, item.data)
+      count++
+    }
+    webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: true, type: 'chromeBookmarks', count }])
+  } catch (e) {
+    console.error('[ImportWizard] Chrome bookmarks import failed:', e)
+    webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: false, type: 'chromeBookmarks', error: 'exception' }])
+  }
+})
+
+webviews.bindIPC('importWizardBookmarksFromHTML', async function (tabId) {
+  try {
+    const fs = require('fs')
+    const bookmarkConverter = require('bookmarkConverter.js')
+    const files = await ipc.invoke('showOpenDialog', { properties: ['openFile'], filters: [{ name: 'HTML', extensions: ['html', 'htm'] }] })
+    if (!files || files.length === 0) {
+      webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: false, type: 'bookmarksHTML', error: 'cancelled' }])
+      return
+    }
+    const contents = fs.readFileSync(files[0], 'utf-8')
+    bookmarkConverter.import(contents)
+    webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: true, type: 'bookmarksHTML' }])
+  } catch (e) {
+    console.error('[ImportWizard] Bookmarks HTML import failed:', e)
+    webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: false, type: 'bookmarksHTML', error: 'exception' }])
+  }
+})
+
+webviews.bindIPC('importWizardPasswordsCSV', async function (tabId) {
+  try {
+    const fs = require('fs')
+    const Keychain = require('passwordManager/keychain.js')
+    const keychain = new Keychain()
+    const files = await ipc.invoke('showOpenDialog', { properties: ['openFile'], filters: [{ name: 'CSV', extensions: ['csv'] }] })
+    if (!files || files.length === 0) {
+      webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: false, type: 'passwordsCSV', error: 'cancelled' }])
+      return
+    }
+    const contents = fs.readFileSync(files[0], 'utf-8')
+    const results = await keychain.importCredentials(contents)
+    webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: true, type: 'passwordsCSV', count: results.length }])
+  } catch (e) {
+    console.error('[ImportWizard] Passwords CSV import failed:', e)
+    webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: false, type: 'passwordsCSV', error: 'exception' }])
+  }
+})
+
+// List available profiles for browser
+webviews.bindIPC('importWizardListProfiles', async function (tabId, args) {
+  try {
+    const fs = require('fs')
+    const path = require('path')
+    const os = require('os')
+    const req = (args && args[0]) || {}
+    const browser = (req.browser || '').toLowerCase()
+    let profiles = []
+    if (browser === 'chrome') {
+      const home = os.homedir()
+      let base
+      if (process.platform === 'darwin') base = path.join(home, 'Library', 'Application Support', 'Google', 'Chrome')
+      else if (process.platform === 'win32') base = path.join(process.env.LOCALAPPDATA || path.join(home, 'AppData', 'Local'), 'Google', 'Chrome', 'User Data')
+      else base = path.join(home, '.config', 'google-chrome')
+      try {
+        const dirs = fs.readdirSync(base, { withFileTypes: true }).filter(d => d.isDirectory())
+        const candidates = dirs.map(d => d.name).filter(n => n === 'Default' || /^Profile \d+$/i.test(n))
+
+        // Read Local State for friendly names
+        let labels = {}
+        try {
+          const lsPath = path.join(base, 'Local State')
+          if (fs.existsSync(lsPath)) {
+            const data = JSON.parse(fs.readFileSync(lsPath, 'utf-8'))
+            const cache = (data && data.profile && data.profile.info_cache) || {}
+            Object.keys(cache).forEach(id => {
+              const name = cache[id] && cache[id].name
+              if (name) labels[id] = name
+            })
+          }
+        } catch (e) { /* ignore parse errors */ }
+
+        profiles = candidates.map(id => {
+          const friendly = labels[id]
+          const label = friendly ? `${friendly} (${id})` : id
+          return { id, label }
+        })
+      } catch {}
+      if (profiles.length === 0) profiles = [{ id: 'Default', label: 'Default' }]
+    } else if (browser === 'firefox') {
+      const home = os.homedir()
+      // Root directory containing profiles.ini
+      let root
+      if (process.platform === 'darwin') root = path.join(home, 'Library', 'Application Support', 'Firefox')
+      else if (process.platform === 'win32') root = path.join(process.env.APPDATA || path.join(home, 'AppData', 'Roaming'), 'Mozilla', 'Firefox')
+      else root = path.join(home, '.mozilla', 'firefox')
+      const profilesIni = path.join(root, 'profiles.ini')
+      // Profiles directory (mac/win use Profiles subdir; linux usually uses root)
+      const profilesDir = process.platform === 'darwin' || process.platform === 'win32' ? path.join(root, 'Profiles') : root
+      try {
+        if (fs.existsSync(profilesIni)) {
+          const content = fs.readFileSync(profilesIni, 'utf-8')
+          const lines = content.split(/\r?\n/)
+          let current = null
+          const sections = []
+          lines.forEach(line => {
+            const trimmed = line.trim()
+            if (!trimmed || trimmed.startsWith(';') || trimmed.startsWith('#')) return
+            if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+              if (current) sections.push(current)
+              current = { name: trimmed.slice(1, -1), props: {} }
+            } else if (current && trimmed.includes('=')) {
+              const idx = trimmed.indexOf('=')
+              const key = trimmed.slice(0, idx).trim()
+              const val = trimmed.slice(idx + 1).trim()
+              current.props[key] = val
+            }
+          })
+          if (current) sections.push(current)
+
+          const profs = sections.filter(s => s.name.toLowerCase().startsWith('profile'))
+          profiles = profs.map(s => {
+            const p = s.props
+            const isRel = String(p.IsRelative || '1') === '1'
+            const pPath = p.Path || ''
+            const abs = isRel ? path.join(root, pPath) : pPath
+            const id = path.basename(abs)
+            const isDefault = String(p.Default || '0') === '1'
+            const label = p.Name ? (isDefault ? `${p.Name} (default)` : p.Name) : id
+            return { id, label, isDefault }
+          })
+          // Filter to existing directories only
+          profiles = profiles.filter(pr => fs.existsSync(path.join(profilesDir, pr.id)) || fs.existsSync(path.join(root, pr.id)))
+          // Sort: default first, then default-release, then alphabetical label
+          profiles.sort((a, b) => {
+            if (a.isDefault && !b.isDefault) return -1
+            if (!a.isDefault && b.isDefault) return 1
+            const aDR = /default-release/.test(a.id)
+            const bDR = /default-release/.test(b.id)
+            if (aDR && !bDR) return -1
+            if (!aDR && bDR) return 1
+            return a.label.localeCompare(b.label)
+          })
+        } else {
+          // Fallback: list directories
+          const base = profilesDir
+          const dirs = fs.readdirSync(base, { withFileTypes: true }).filter(d => d.isDirectory())
+          profiles = dirs.map(d => ({ id: d.name, label: d.name }))
+          profiles.sort((a, b) => (/default-release/.test(b.id) - /default-release/.test(a.id)))
+        }
+      } catch {}
+    } else if (browser === 'safari') {
+      profiles = [{ id: '', label: 'Default' }]
+    }
+    webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: true, type: 'profiles', browser, profiles }])
+    // Also send a dedicated message to populate profiles quickly
+    webviews.callAsync(tabId, 'send', ['importWizardProfiles', { profiles }])
+  } catch (e) {
+    webviews.callAsync(tabId, 'send', ['importWizardProfiles', { profiles: [] }])
+  }
+})
+
+// History import (Chrome, Firefox, Safari) using sqlite3 CLI if available
+webviews.bindIPC('importWizardHistory', async function (tabId, args) {
+  const req = (args && args[0]) || {}
+  const browser = (req.browser || '').toLowerCase()
+  try {
+    const fs = require('fs')
+    const path = require('path')
+    const os = require('os')
+    const { spawn } = require('child_process')
+    const papaparse = require('papaparse')
+    const places = require('places/places.js')
+    const req = (args && args[0]) || {}
+    const selectedProfile = req.profile || ''
+
+    function runSqliteQuery (dbPath, query) {
+      return new Promise((resolve, reject) => {
+        let stdout = ''
+        let stderr = ''
+        const child = spawn('sqlite3', ['-header', '-csv', dbPath, query])
+        child.stdout.on('data', chunk => { stdout += chunk.toString('utf8') })
+        child.stderr.on('data', chunk => { stderr += chunk.toString('utf8') })
+        child.on('error', (err) => {
+          if (err && err.code === 'ENOENT') return reject(new Error('sqlite3_missing'))
+          reject(err)
+        })
+        child.on('close', (code) => {
+          if (code !== 0) {
+            return reject(new Error('sqlite3_exit_' + code + ':' + stderr))
+          }
+          try {
+            const parsed = papaparse.parse(stdout, { header: true, skipEmptyLines: true })
+            resolve(parsed.data)
+          } catch (e) {
+            reject(e)
+          }
+        })
+      })
+    }
+
+    function tempCopy (dbPath) {
+      const tmp = path.join(os.tmpdir(), `min-import-${Date.now()}-${Math.random().toString(36).slice(2)}.db`)
+      fs.copyFileSync(dbPath, tmp)
+      return tmp
+    }
+
+    function chromeProfile (profileName) {
+      const home = os.homedir()
+      if (process.platform === 'darwin') return path.join(home, 'Library', 'Application Support', 'Google', 'Chrome', profileName || 'Default')
+      if (process.platform === 'win32') return path.join(process.env.LOCALAPPDATA || path.join(home, 'AppData', 'Local'), 'Google', 'Chrome', 'User Data', profileName || 'Default')
+      return path.join(home, '.config', 'google-chrome', profileName || 'Default')
+    }
+
+    function firefoxProfile () {
+      const home = os.homedir()
+      if (process.platform === 'darwin') return path.join(home, 'Library', 'Application Support', 'Firefox', 'Profiles')
+      if (process.platform === 'win32') return path.join(process.env.APPDATA || path.join(home, 'AppData', 'Roaming'), 'Mozilla', 'Firefox', 'Profiles')
+      return path.join(home, '.mozilla', 'firefox')
+    }
+
+    function findFirefoxPlacesDb (profileName) {
+      try {
+        const base = firefoxProfile()
+        const entries = fs.readdirSync(base, { withFileTypes: true }).filter(e => e.isDirectory())
+        let preferred
+        if (profileName) {
+          preferred = entries.find(e => e.name === profileName)
+        }
+        if (!preferred) {
+          preferred = entries.find(e => /default-release/i.test(e.name)) || entries[0]
+        }
+        if (!preferred) return null
+        const db = path.join(base, preferred.name, 'places.sqlite')
+        return fs.existsSync(db) ? db : null
+      } catch { return null }
+    }
+
+    function safariHistoryDb () {
+      if (process.platform !== 'darwin') return null
+      const home = os.homedir()
+      const p = path.join(home, 'Library', 'Safari', 'History.db')
+      return fs.existsSync(p) ? p : null
+    }
+
+    function chromeTimeToUnixMs (microStr) {
+      try {
+        const micro = BigInt(microStr || '0')
+        if (micro === 0n) return Date.now()
+        const epochDiffMs = 11644473600000n
+        return Number(micro / 1000n - epochDiffMs)
+      } catch { return Date.now() }
+    }
+
+    function safariTimeToUnixMs (secondsSince2001) {
+      try {
+        const s = Number(secondsSince2001 || 0)
+        return Math.round((s + 978307200) * 1000)
+      } catch { return Date.now() }
+    }
+
+    let rows = []
+    if (browser === 'chrome') {
+      const db = path.join(chromeProfile(selectedProfile), 'History')
+      if (!fs.existsSync(db)) throw new Error('not_found')
+      const tmp = tempCopy(db)
+      rows = await runSqliteQuery(tmp, 'SELECT url, title, last_visit_time, visit_count FROM urls ORDER BY last_visit_time DESC LIMIT 5000;')
+      for (const r of rows) {
+        const url = r.url
+        const title = r.title || r.url
+        const lastVisit = chromeTimeToUnixMs(r.last_visit_time)
+        const visitCount = parseInt(r.visit_count || '1') || 1
+        await places.updateItem(url, { title, lastVisit, visitCount, isBookmarked: false })
+      }
+      webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: true, type: 'history', browser: 'chrome', count: rows.length }])
+      return
+    }
+    if (browser === 'firefox') {
+      const db = findFirefoxPlacesDb(selectedProfile)
+      if (!db) throw new Error('not_found')
+      const tmp = tempCopy(db)
+      rows = await runSqliteQuery(tmp, 'SELECT url, title, last_visit_date, visit_count FROM moz_places WHERE last_visit_date IS NOT NULL ORDER BY last_visit_date DESC LIMIT 5000;')
+      for (const r of rows) {
+        const url = r.url
+        const title = r.title || r.url
+        // Firefox stores microseconds since Unix epoch
+        const lastVisit = Math.round((parseInt(r.last_visit_date || '0') || 0) / 1000)
+        const visitCount = parseInt(r.visit_count || '1') || 1
+        await places.updateItem(url, { title, lastVisit, visitCount, isBookmarked: false })
+      }
+      webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: true, type: 'history', browser: 'firefox', count: rows.length }])
+      return
+    }
+    if (browser === 'safari') {
+      const db = safariHistoryDb()
+      if (!db) throw new Error('not_found')
+      const tmp = tempCopy(db)
+      rows = await runSqliteQuery(tmp, 'SELECT history_items.url as url, history_items.title as title, MAX(history_visits.visit_time) as last_time, COUNT(history_visits.id) as cnt FROM history_items LEFT JOIN history_visits ON history_items.id = history_visits.history_item GROUP BY url, title ORDER BY last_time DESC LIMIT 5000;')
+      for (const r of rows) {
+        const url = r.url
+        const title = r.title || r.url
+        const lastVisit = safariTimeToUnixMs(r.last_time)
+        const visitCount = parseInt(r.cnt || '1') || 1
+        await places.updateItem(url, { title, lastVisit, visitCount, isBookmarked: false })
+      }
+      webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: true, type: 'history', browser: 'safari', count: rows.length }])
+      return
+    }
+
+    webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: false, type: 'history', browser, error: 'unknown_browser' }])
+  } catch (e) {
+    console.error('[ImportWizard] History import failed:', e)
+    const msg = (e && e.message) || 'exception'
+    const errorType = msg.includes('sqlite3_missing') ? 'sqlite3_missing' : msg
+    webviews.callAsync(tabId, 'send', ['importWizardResult', { ok: false, type: 'history', error: errorType }])
+  }
+})
+
 ipc.on('view-event', function (e, args) {
   webviews.emitEvent(args.event, args.tabId, args.args)
 })

@@ -227,6 +227,7 @@
     "appMenuInspectPage": "Inspect Page",
     "appMenuCapabilities": "Capabilities",
     "appMenuAIAssistant": "AI Assistant",
+    "appMenuImportData": "Import From Other Browsers...",
     "appMenuPageSummarizer": "Page Summarizer",
     "appMenuSwitchLLM": "Switch LLM...",
     "appMenuAutoCleanEnable": "Auto-Clean Tabs: Enable",

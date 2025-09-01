@@ -61,6 +61,36 @@ window.addEventListener('message', function (e) {
   if (e.data?.message === 'downloadFile') {
     ipc.send('downloadFile', e.data.url)
   }
+
+  // Import Wizard bridge messages from internal pages
+  if (e.data?.message === 'importWizardChromeBookmarksAuto') {
+    ipc.send('importWizardChromeBookmarksAuto', { profile: e.data.profile })
+  }
+  if (e.data?.message === 'importWizardBookmarksFromHTML') {
+    ipc.send('importWizardBookmarksFromHTML')
+  }
+  if (e.data?.message === 'importWizardPasswordsCSV') {
+    ipc.send('importWizardPasswordsCSV')
+  }
+  if (e.data?.message === 'importWizardHistory') {
+    ipc.send('importWizardHistory', { browser: e.data.browser, profile: e.data.profile })
+  }
+  if (e.data?.message === 'importWizardListProfiles') {
+    ipc.send('importWizardListProfiles', { browser: e.data.browser })
+  }
+})
+
+// Forward results back into page context
+ipc.on('importWizardResult', function (event, payload) {
+  try {
+    window.postMessage({ message: 'importWizardResult', payload }, window.location.toString())
+  } catch (e) { /* no-op */ }
+})
+
+ipc.on('importWizardProfiles', function (event, payload) {
+  try {
+    window.postMessage({ message: 'importWizardProfiles', payload }, window.location.toString())
+  } catch (e) { /* no-op */ }
 })
 
 // Link Preview (hover on <a> shows preview image from target page)

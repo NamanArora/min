@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self';">
+    <title>Import Wizard</title>
+    <link rel="stylesheet" href="../settings/settings.css">
+    <link rel="stylesheet" href="./import.css">
+  </head>
+  <body class="page-container">
+    <div class="settings-container" id="import-wizard-container">
+      <h3>Import From Other Browsers</h3>
+      <p>Select a browser and what you’d like to import.</p>
+
+      <div class="import-grid">
+        <div class="import-section">
+          <label for="browser-select"><strong>Browser</strong></label>
+          <select id="browser-select">
+            <option value="chrome">Google Chrome</option>
+            <option value="firefox">Mozilla Firefox</option>
+            <option value="safari">Apple Safari</option>
+          </select>
+        </div>
+        <div class="import-section" id="profile-section">
+          <label for="profile-select"><strong>Profile</strong></label>
+          <select id="profile-select">
+            <option value="">Detecting...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="import-section">
+        <label><strong>Data to import</strong></label>
+        <div class="checkbox-row">
+          <label><input type="checkbox" id="import-bookmarks" checked> Bookmarks</label>
+          <label><input type="checkbox" id="import-history"> History</label>
+          <label><input type="checkbox" id="import-passwords"> Passwords</label>
+        </div>
+      </div>
+
+      <div id="import-actions">
+        <button id="start-import">Start Import</button>
+        <span id="import-status" class="status"></span>
+      </div>
+
+      <div class="help-text" id="import-help"></div>
+
+      <div class="advanced">
+        <h4>Manual Import</h4>
+        <p>If automatic detection fails, you can import from files:</p>
+        <div class="manual-buttons">
+          <button id="select-bookmarks-html">Import Bookmarks from HTML...</button>
+          <button id="select-passwords-csv">Import Passwords from CSV...</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="./import.js"></script>
+  </body>
+  </html>
