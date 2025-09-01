@@ -498,6 +498,87 @@ ipc.on('request-tab-state', function(e) {
   getWindowWebContents(otherWindow).send('read-tab-state')
 })
 
+// Link preview fetcher: returns OG image or first image from target page
+// simple in-memory cache
+const linkPreviewCache = new Map()
+
+ipc.on('requestLinkPreview', async function (e, data) {
+  try {
+    if (!data || !data.href) {
+      console.log('[LinkPreview] request missing href')
+      return
+    }
+    const href = data.href
+    console.log('[LinkPreview] request for', href)
+    const cached = linkPreviewCache.get(href)
+    if (cached && (Date.now() - cached.t) < 5 * 60 * 1000) {
+      console.log('[LinkPreview] cache hit')
+      e.sender.send('linkPreviewData', cached.data)
+      return
+    }
+
+    // Try offscreen capture first
+    let dataUrl = null
+    let title = null
+    try {
+      console.log('[LinkPreview] creating offscreen window')
+      const off = new BrowserWindow({ show: false, webPreferences: { offscreen: true, contextIsolation: true, sandbox: true } })
+      off.setSize(1024, 768)
+      const nav = off.loadURL(href)
+      const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+      await Promise.race([nav, timeout])
+      console.log('[LinkPreview] offscreen loaded:', href)
+      // small delay to allow layout
+      await new Promise(r => setTimeout(r, 400))
+      try { title = await off.webContents.executeJavaScript('document.title').catch(() => null) } catch (e2) { console.log('[LinkPreview] title eval failed', e2 && e2.message) }
+      const img = await off.webContents.capturePage({ x: 0, y: 0, width: 1024, height: 768 })
+      dataUrl = img.toDataURL()
+      console.log('[LinkPreview] capture success, length:', dataUrl ? dataUrl.length : 0)
+      off.destroy()
+    } catch (e1) {
+      console.log('[LinkPreview] offscreen failed, fallback to OG scrape:', e1 && e1.message)
+      // fallback to OG scraping
+      try {
+        console.log('[LinkPreview] fetching for OG image', href)
+        const res = await fetch(href)
+        if (res.ok) {
+          const html = await res.text()
+          const titleMatch = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)
+          const ogMatch = /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i.exec(html) || /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i.exec(html)
+          let image = ogMatch ? ogMatch[1] : null
+          if (!image) {
+            const imgMatch = /<img[^>]+src=["']([^"']+)["'][^>]*>/i.exec(html)
+            if (imgMatch) image = imgMatch[1]
+          }
+          try { if (image) dataUrl = new URL(image, href).toString() } catch (e2) {}
+          if (titleMatch) title = titleMatch[1].trim()
+          console.log('[LinkPreview] OG parse result image?', !!dataUrl, 'title?', !!title)
+        } else {
+          console.log('[LinkPreview] fetch not ok', res.status)
+        }
+      } catch (e2) {
+        console.log('[LinkPreview] fetch OG failed', e2 && e2.message)
+      }
+    }
+
+    const payload = { href, imageUrl: dataUrl || null, title: title || null }
+    linkPreviewCache.set(href, { t: Date.now(), data: payload })
+    e.sender.send('linkPreviewData', payload)
+  } catch (err) {
+    console.warn('[LinkPreview] error:', err && err.message)
+  }
+})
+
+// Preload setting request
+ipc.on('getSettingValue', function (e, key) {
+  try {
+    const value = settings.get(key)
+    e.sender.send('settingValue', { key, value })
+  } catch (err) {
+    e.sender.send('settingValue', { key, value: undefined })
+  }
+})
+
 /* places service */
 
 const placesPage = 'file://' + __dirname + '/js/places/placesService.html'

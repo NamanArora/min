@@ -383,6 +383,18 @@ updateNotificationsCheckbox.addEventListener('change', function (e) {
   settings.set('updateNotificationsEnabled', this.checked)
 })
 
+/* Link Preview */
+var linkPreviewCheckbox = document.getElementById('checkbox-link-preview')
+if (linkPreviewCheckbox) {
+  settings.get('linkPreviewEnabled', function (value) {
+    linkPreviewCheckbox.checked = (value !== false)
+  })
+  linkPreviewCheckbox.addEventListener('change', function () {
+    console.log('[Settings][LinkPreview] toggle ->', this.checked)
+    settings.set('linkPreviewEnabled', this.checked)
+  })
+}
+
 /* usage statistics setting */
 
 var usageStatisticsCheckbox = document.getElementById('checkbox-usage-statistics')

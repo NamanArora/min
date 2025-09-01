@@ -287,6 +287,10 @@
     "downloadStateFailed": "Failed",
     /* Update Notifications */
     "updateNotificationTitle": "A new version of Min is available",
+
+    /* Link Preview */
+    "settingsLinkPreviewToggle": "Link preview on hover",
+    "settingsLinkPreviewExplanation": "Show a small thumbnail and title when hovering hyperlinks. Skips buttons, forms, and non-http(s) links.",
     /* Autofill settings */
     "settingsPasswordAutoFillHeadline": "Password Auto-Fill",
     "settingsSelectPasswordManager": "Choose one of the supported password managers:",
